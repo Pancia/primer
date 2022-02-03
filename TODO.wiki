@@ -1,0 +1,15 @@
+# tasks
+- [ ] take photo -> journal entry
+- [ ] pick an alarm sound
+- [ ] export storage as ?
+
+# refactorings
+- [ ] refactor navigation actions into viewmodel
+- [ ] ? refactor provideFactory into MyViewModel superclass, is it possible?
+- [ ] refactor getHabitByID into superclass
+
+# bugs
+- [ ] alarm sound does not stop properly
+- [ ] alarm sound should not play if looking at screen
+- [ ] clicking done should not let you go back
+- [ ] going back to list from detail should refresh list of habits, couldve edited

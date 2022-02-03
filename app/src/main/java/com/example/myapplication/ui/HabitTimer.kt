@@ -7,13 +7,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import android.widget.ToggleButton
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -55,9 +60,14 @@ class TimerViewModel(
     private val habitID: String,
     initialDuration: Int?
 ) : ViewModel() {
+    val isAddition = mutableStateOf(true)
+    fun toggleAddition() {
+        isAddition.value = !isAddition.value
+    }
+
     val time = mutableStateOf(initialDuration ?: 0) // in minutes
     fun addTime(i: Int) {
-        time.value = time.value + i
+        time.value = time.value + if (isAddition.value) i else -i
     }
 
     fun startAlarm() {
@@ -90,12 +100,18 @@ class TimerViewModel(
 }
 
 @Composable
+fun TimeButton(vm: TimerViewModel, time: Int) =
+    Button(onClick = { vm.addTime(time) }) {
+        Text("$time")
+    }
+
+@Composable
 fun HabitTimer(
     nav: NavHostController,
-    timerViewModel: TimerViewModel,
+    vm: TimerViewModel,
     habitID: String
 ) {
-    val habit = timerViewModel.getHabitInfo(habitID)
+    val habit = vm.getHabitInfo(habitID)
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -104,32 +120,33 @@ fun HabitTimer(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(habit.title)
-        Text("${timerViewModel.time.value} minutes")
-        Row(modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Button(onClick = { timerViewModel.addTime(1) }) {
-                Text("1")
-            }
-            Button(onClick = { timerViewModel.addTime(5) }) {
-                Text("5")
-            }
-            Button(onClick = { timerViewModel.addTime(15) }) {
-                Text("15")
-            }
+        Text("${vm.time.value} minutes")
+        Row() {
+            Switch(checked = vm.isAddition.value,
+                onCheckedChange = { vm.toggleAddition() })
+            Text(if (vm.isAddition.value) "Add" else "Sub")
         }
-        Row(modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Button(onClick = { timerViewModel.addTime(30) }) {
-                Text("30")
-            }
-            Button(onClick = { timerViewModel.addTime(60) }) {
-                Text("60")
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(1f),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TimeButton(vm, 1)
+            TimeButton(vm, 5)
+            TimeButton(vm, 15)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(1f),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TimeButton(vm, 30)
+            TimeButton(vm, 60)
         }
         Button(onClick = {
-            timerViewModel.startAlarm()
+            vm.startAlarm()
             nav.navigate(
                 NavRoute.HabitRunning.create(
                     habit.id,
-                    timerViewModel.time.value
+                    vm.time.value
                 )
             )
         }) {

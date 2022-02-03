@@ -19,19 +19,33 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val navigateTo = intent?.extras?.getString("navigateTo")
-        navigateTo?.let {
+    lateinit var nav: NavHostController
+
+    private fun navigateTo(route: String?) {
+        route?.let {
             (application as MyApplication).stopAlarm()
             (this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                 .cancel(0)
+            nav.navigate(it)
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        val route = intent?.extras?.getString("navigateTo")
+        Log.e("DBG", "onNewIntent: $route")
+        navigateTo(route)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val route = intent?.extras?.getString("navigateTo")
+        Log.e("DBG", "navTo: $route")
         setContent {
             MyApplicationTheme {
-                val nav = rememberNavController()
+                nav = rememberNavController()
                 MyApp(nav, application)
-                navigateTo?.let { nav.navigate(it) }
+                navigateTo(route)
             }
         }
     }

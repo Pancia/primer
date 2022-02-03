@@ -7,6 +7,7 @@ import android.content.Context
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
+import android.util.Log
 import com.example.myapplication.ui.myNotifChID
 
 class AppContainer(private val applicationContext: Context) {
@@ -41,10 +42,12 @@ class MyApplication : Application() {
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         )
         ringtone?.isLooping = true
+        Log.e("DBG", "start: ringtone = $ringtone")
         ringtone?.play()
     }
 
     fun stopAlarm() {
+        Log.e("DBG", "stop: ringtone = $ringtone")
         ringtone?.stop()
     }
 }

@@ -8,17 +8,21 @@ import com.example.myapplication.Habit
 
 class HabitsListViewModel(context: Context) : ViewModel() {
     val habits = mutableStateListOf<Habit>()
-    private val spList = context.getSharedPreferences("habitsList", 0)!!
+    private val storage = HabitStorage(context)
 
     init {
-        habits.addAll(spList.all.values.toList().map { Habit(it as String) })
+        habits.addAll(storage.getAllTitles())
     }
 
     fun createHabit(title: String): Habit {
-        val habit = Habit(title = title)
+        val habit = storage.create(title)
         habits.add(habit)
-        spList.edit().putString(title, title).apply()
         return habit
+    }
+
+    fun deleteAllHabits() {
+        habits.clear()
+        storage.deleteAll()
     }
 
     companion object {

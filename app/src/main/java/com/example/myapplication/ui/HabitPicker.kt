@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @Composable
-fun HabitPicker(navController: NavHostController, habitsListViewModel: HabitsListViewModel) {
+fun HabitPicker(nav: NavHostController, habitsListViewModel: HabitsListViewModel) {
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -21,7 +21,7 @@ fun HabitPicker(navController: NavHostController, habitsListViewModel: HabitsLis
         habitsListViewModel.habits.sortedBy { it.title }.forEach {
             Button(modifier = Modifier.padding(10.dp),
                 onClick = {
-                    navController.navigate(NavRoute.SetTimer.create(it.title)) {
+                    nav.navigate(NavRoute.SetTimer.create(it.id)) {
                         popUpTo(NavRoute.Home.route)
                     }
                 }) {

@@ -1,28 +1,35 @@
 package com.example.myapplication.ui
 
+import android.content.Context
 import android.os.CountDownTimer
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
+import com.example.myapplication.Habit
+import java.util.*
 import kotlin.math.floor
 
-class RunningViewModel : ViewModel() {
+class RunningViewModel(context: Context) : ViewModel() {
     private lateinit var timer: CountDownTimer
 
     val timeLeft = mutableStateOf(0L)
 
     fun startCountdown(duration: Int) {
         timeLeft.value = duration.toLong()
+        // TODO FIXME multiply duration by 60
         timer = object : CountDownTimer(duration * 1000L, 1000) {
             override fun onTick(millisLeft: Long) {
                 timeLeft.value = floor(millisLeft / 1000.0).toLong()
@@ -36,16 +43,46 @@ class RunningViewModel : ViewModel() {
         super.onCleared()
         timer.cancel()
     }
+    
+    private val storage = HabitStorage(context)
+
+    fun getHabitInfo(habitID: String): Habit =
+        storage.getHabitInfoByID(habitID)
+
+    fun editTitle(id: UUID, title: String) {
+        storage.editTitle(id, title)
+    }
+
+    fun editDescription(id: UUID, desc: String) {
+        storage.editDescription(id, desc)
+    }
+
+    fun saveJournalEntry(id: UUID, entry: String) {
+        storage.addJournalEntry(id, entry)
+    }
+
+    companion object {
+        fun provideFactory(context: Context):
+                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return RunningViewModel(context) as T
+            }
+        }
+    }
 }
 
 @Composable
 fun HabitRunning(
-    navController: NavHostController,
-    runningViewModel: RunningViewModel,
-    habitName: String,
-    since: Long, // seconds
+    nav: NavHostController,
+    vm: RunningViewModel,
+    habitID: String,
     duration: Int // minutes
 ) {
+    val habit = vm.getHabitInfo(habitID)
+    val title = remember { mutableStateOf(habit.title) }
+    val description = remember { mutableStateOf(habit.description) }
+    val journalEntry = remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -53,25 +90,44 @@ fun HabitRunning(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(habitName)
-        Text("duration: ${runningViewModel.timeLeft.value}")
-        // TODO: add habit description editable field
-        // TODO: add journal entry editable field
+        TextField(
+            value = title.value,
+            onValueChange = { title.value = it },
+            label = { Text("Title") },
+            modifier = Modifier.onFocusChanged {
+                vm.editTitle(habit.id, title.value)
+            }
+        )
+        Text("duration: ${vm.timeLeft.value}")
+        TextField(
+            value = description.value,
+            onValueChange = { description.value = it },
+            label = { Text("Description") },
+            modifier = Modifier.onFocusChanged {
+                vm.editDescription(habit.id, description.value)
+            }
+        )
+        TextField(
+            value = journalEntry.value,
+            onValueChange = { journalEntry.value = it },
+            label = { Text("Journal Entry") }
+        )
         Button(onClick = {
             // TODO: cancel old timer
-            navController.navigate(NavRoute.SetTimer.create(habitName, duration))
+            nav.navigate(NavRoute.SetTimer.create(habit.id, duration))
         }) {
             Text("Snooze")
         }
         Button(onClick = {
-            navController.navigate(NavRoute.PickHabit.create()) {
+            nav.navigate(NavRoute.PickHabit.create()) {
                 popUpTo(NavRoute.PickHabit.route) { inclusive = true }
             }
         }) {
             Text("Cancel")
         }
         Button(onClick = {
-            navController.navigate(NavRoute.PickHabit.create()) {
+            vm.saveJournalEntry(habit.id, journalEntry.value)
+            nav.navigate(NavRoute.PickHabit.create()) {
                 popUpTo(NavRoute.PickHabit.route) { inclusive = true }
             }
         }) {

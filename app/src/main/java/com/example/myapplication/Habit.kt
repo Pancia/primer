@@ -1,10 +1,13 @@
 package com.example.myapplication
 
+import java.util.*
+
 // TODO notes should allow for images
-data class Note(val text: String)
+data class JournalEntry(val at: String, val text: String)
 
 data class Habit(
     val title: String,
+    val id: UUID = UUID.randomUUID(),
     val description: String = "Default description",
-    val notes: List<Note> = emptyList()
+    var journalEntries: List<JournalEntry> = emptyList()
 )

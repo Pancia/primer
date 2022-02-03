@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
 @Composable
-fun Home(navController: NavController) {
+fun Home(nav: NavController) {
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -20,10 +20,10 @@ fun Home(navController: NavController) {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { navController.navigate(NavRoute.ListOfHabits.create()) }) {
+        Button(onClick = { nav.navigate(NavRoute.ListOfHabits.create()) }) {
             Text(text = "List of Habits")
         }
-        Button(onClick = { navController.navigate(NavRoute.PickHabit.create()) }) {
+        Button(onClick = { nav.navigate(NavRoute.PickHabit.create()) }) {
             Text(text = "Start Day")
         }
     }

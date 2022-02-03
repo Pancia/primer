@@ -1,5 +1,7 @@
 package com.example.myapplication.ui
 
+import java.util.*
+
 sealed class NavRoute(val route: String) {
     object Home : NavRoute("home") {
         fun create() = this.route
@@ -9,21 +11,21 @@ sealed class NavRoute(val route: String) {
         fun create() = this.route
     }
 
-    object HabitDetail : NavRoute("habit/{habitName}") {
-        fun create(habitName: String) = "habit/$habitName"
+    object HabitDetail : NavRoute("habit/{habitID}") {
+        fun create(habitID: UUID) = "habit/$habitID"
     }
 
     object PickHabit : NavRoute("habit-picker") {
         fun create() = this.route
     }
 
-    object SetTimer : NavRoute("set-timer/{habitName}?duration={duration}") {
-        fun create(habitName: String, duration: Int? = null) =
-            "set-timer/$habitName${if (duration != null) "?duration=$duration" else ""}"
+    object SetTimer : NavRoute("set-timer/{habitID}?duration={duration}") {
+        fun create(habitID: UUID, duration: Int? = null) =
+            "set-timer/$habitID${if (duration != null) "?duration=$duration" else ""}"
     }
 
-    object HabitRunning : NavRoute("habit-running/{habitName}/{since}/{duration}") {
-        fun create(habitName: String, now: Long, duration: Int) =
-            "habit-running/$habitName/$now/$duration"
+    object HabitRunning : NavRoute("habit-running/{habitID}/{duration}") {
+        fun create(habitID: UUID, duration: Int) =
+            "habit-running/$habitID/$duration"
     }
 }

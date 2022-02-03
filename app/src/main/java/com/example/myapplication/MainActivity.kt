@@ -22,7 +22,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val navigateTo = intent?.extras?.getString("navigateTo")
-        Log.d("DBG", "onCreate [navTo = $navigateTo]")
         navigateTo?.let {
             (application as MyApplication).stopAlarm()
             (this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -30,9 +29,9 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MyApplicationTheme {
-                val navController = rememberNavController()
-                MyApp(navController, application)
-                navigateTo?.let { navController.navigate(it) }
+                val nav = rememberNavController()
+                MyApp(nav, application)
+                navigateTo?.let { nav.navigate(it) }
             }
         }
     }

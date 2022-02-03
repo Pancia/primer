@@ -1,16 +1,12 @@
 package com.example.myapplication
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.*
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun MyApp(nav: NavHostController, context: Context) {
@@ -44,12 +40,15 @@ fun MyApp(nav: NavHostController, context: Context) {
         ) {
             val habitID = it.arguments?.getString("habitID")!!
             val timerViewModel: TimerViewModel =
-                viewModel(factory = TimerViewModel.provideFactory(context, habitID, it.arguments?.getInt("duration")))
-            HabitTimer(
-                nav,
-                timerViewModel,
-                habitID
-            )
+                viewModel(
+                    factory = TimerViewModel.provideFactory(
+                        context,
+                        nav,
+                        habitID,
+                        it.arguments?.getInt("duration")
+                    )
+                )
+            HabitTimer(timerViewModel, habitID)
         }
         composable(
             NavRoute.HabitRunning.route,
@@ -59,7 +58,7 @@ fun MyApp(nav: NavHostController, context: Context) {
             )
         ) {
             val runningViewModel: RunningViewModel =
-                viewModel(factory = RunningViewModel.provideFactory(context))
+                viewModel(factory = RunningViewModel.provideFactory(context, nav))
             val duration = it.arguments?.getInt("duration")!!
             runningViewModel.startCountdown(duration)
             HabitRunning(

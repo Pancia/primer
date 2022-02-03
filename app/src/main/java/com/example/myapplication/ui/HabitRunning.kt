@@ -1,7 +1,9 @@
 package com.example.myapplication.ui
 
+import android.app.NotificationManager
 import android.content.Context
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,10 +21,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.example.myapplication.Habit
+import com.example.myapplication.MyApplication
 import java.util.*
 import kotlin.math.floor
 
-class RunningViewModel(context: Context) : ViewModel() {
+class RunningViewModel(
+    private val context: Context,
+    private val nav: NavHostController
+) : ViewModel() {
     private lateinit var timer: CountDownTimer
 
     val timeLeft = mutableStateOf(0L)
@@ -43,7 +49,7 @@ class RunningViewModel(context: Context) : ViewModel() {
         super.onCleared()
         timer.cancel()
     }
-    
+
     private val storage = HabitStorage(context)
 
     fun getHabitInfo(habitID: String): Habit =
@@ -57,16 +63,43 @@ class RunningViewModel(context: Context) : ViewModel() {
         storage.editDescription(id, desc)
     }
 
-    fun saveJournalEntry(id: UUID, entry: String) {
+    private fun saveJournalEntry(id: UUID, entry: String) {
         storage.addJournalEntry(id, entry)
     }
 
+    private fun cancelAlarm(habitID: UUID) {
+        Alarm.stopAlarm(context, "$habitID")
+        (context as MyApplication).stopAlarm()
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .cancel(0)
+    }
+
+    fun done(habit: Habit, journalEntry: String) {
+        cancelAlarm(habit.id)
+        saveJournalEntry(habit.id, journalEntry)
+        nav.navigate(NavRoute.PickHabit.create()) {
+            popUpTo(NavRoute.PickHabit.route) { inclusive = true }
+        }
+    }
+
+    fun cancel(habit: Habit) {
+        cancelAlarm(habit.id)
+        nav.navigate(NavRoute.PickHabit.create()) {
+            popUpTo(NavRoute.PickHabit.route) { inclusive = true }
+        }
+    }
+
+    fun snooze(habit: Habit, duration: Int) {
+        cancelAlarm(habit.id)
+        nav.navigate(NavRoute.SetTimer.create(habit.id, duration))
+    }
+
     companion object {
-        fun provideFactory(context: Context):
+        fun provideFactory(context: Context, nav: NavHostController):
                 ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return RunningViewModel(context) as T
+                return RunningViewModel(context, nav) as T
             }
         }
     }
@@ -113,23 +146,17 @@ fun HabitRunning(
             label = { Text("Journal Entry") }
         )
         Button(onClick = {
-            // TODO: cancel old timer
-            nav.navigate(NavRoute.SetTimer.create(habit.id, duration))
+            vm.snooze(habit, duration)
         }) {
             Text("Snooze")
         }
         Button(onClick = {
-            nav.navigate(NavRoute.PickHabit.create()) {
-                popUpTo(NavRoute.PickHabit.route) { inclusive = true }
-            }
+            vm.cancel(habit)
         }) {
             Text("Cancel")
         }
         Button(onClick = {
-            vm.saveJournalEntry(habit.id, journalEntry.value)
-            nav.navigate(NavRoute.PickHabit.create()) {
-                popUpTo(NavRoute.PickHabit.route) { inclusive = true }
-            }
+            vm.done(habit, journalEntry.value)
         }) {
             Text("Done")
         }

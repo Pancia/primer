@@ -33,14 +33,12 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         val route = intent?.extras?.getString("navigateTo")
-        Log.e("DBG", "onNewIntent: $route")
         navigateTo(route)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val route = intent?.extras?.getString("navigateTo")
-        Log.e("DBG", "navTo: $route")
         setContent {
             MyApplicationTheme {
                 nav = rememberNavController()

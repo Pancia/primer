@@ -1,10 +1,18 @@
 # tasks
-- [ ] take photo -> journal entry
-- [ ] export storage as ?
+- [o] take photo -> journal entry
+    - [X] take photo / camera
+    - [X] journal entry subtype image uri
+    - [o] render uri image subtype
+        - [X] in running screen
+        - [ ] in habit detail
+    - [ ] can delete in running screen
+- [ ] habitstorage -> filesystem externalmediadirs
 - [ ] pick an alarm sound
+- [ ] ui polish
 
 # refactorings
 - [ ] refactor navigation actions into viewmodel
 
 # bugs
-- [ ] going back to list from detail should refresh list of habits, couldve edited
+- [ ] going back to list from detail should refresh list of habits, habit couldve been edited
+    - [ ] will need refactoring to livedata or flow (i think, i dont quite understand what these are)

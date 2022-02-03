@@ -1,13 +1,15 @@
 package com.example.myapplication.ui
 
+import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.CountDownTimer
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -17,16 +19,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.semantics.Role.Companion.Image
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.myapplication.Habit
+import com.example.myapplication.JournalEntry
 import com.example.myapplication.MyApplication
 import java.util.*
 import kotlin.math.floor
 
 class RunningViewModel(
-    private val context: Context,
+    val context: Context,
     private val nav: NavHostController
 ) : ViewModel() {
     private lateinit var timer: CountDownTimer
@@ -118,49 +125,92 @@ fun HabitRunning(
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
     val journalEntry = remember { mutableStateOf("") }
-    Column(
-        modifier = Modifier
-            .fillMaxHeight(1f)
-            .fillMaxWidth(1f),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TextField(
-            value = title.value,
-            onValueChange = { title.value = it },
-            label = { Text("Title") },
-            modifier = Modifier.onFocusChanged {
-                vm.editTitle(habit.id, title.value)
-            }
-        )
-        Text("duration: ${vm.timeLeft.value}")
-        TextField(
-            value = description.value,
-            onValueChange = { description.value = it },
-            label = { Text("Description") },
-            modifier = Modifier.onFocusChanged {
-                vm.editDescription(habit.id, description.value)
-            }
-        )
-        TextField(
-            value = journalEntry.value,
-            onValueChange = { journalEntry.value = it },
-            label = { Text("Journal Entry") }
-        )
-        Button(onClick = {
-            vm.snooze(habit, duration)
-        }) {
-            Text("Snooze")
+    val images = remember { mutableListOf<JournalEntry.Image>() }
+    val takingPicture = remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            takingPicture.value = true
+        } else {
+            // Permission Denied
         }
-        Button(onClick = {
-            vm.cancel(habit)
-        }) {
-            Text("Cancel")
-        }
-        Button(onClick = {
-            vm.done(habit, journalEntry.value)
-        }) {
-            Text("Done")
+    }
+
+    if (takingPicture.value) {
+        CameraView(onImageCaptured = { uri, time, fromGallery ->
+            Log.e("DBG", "uri: $uri, $time, $fromGallery")
+            takingPicture.value = false
+            images.add(JournalEntry.Image(time, uri))
+        }, onError = { e ->
+            Log.e("DBG", "err: $e")
+        })
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight(1f)
+                .fillMaxWidth(1f),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextField(
+                value = title.value,
+                onValueChange = { title.value = it },
+                label = { Text("Title") },
+                modifier = Modifier.onFocusChanged {
+                    vm.editTitle(habit.id, title.value)
+                }
+            )
+            Text("duration: ${vm.timeLeft.value}")
+            TextField(
+                value = description.value,
+                onValueChange = { description.value = it },
+                label = { Text("Description") },
+                modifier = Modifier.onFocusChanged {
+                    vm.editDescription(habit.id, description.value)
+                }
+            )
+            TextField(
+                value = journalEntry.value,
+                onValueChange = { journalEntry.value = it },
+                label = { Text("Journal Entry") }
+            )
+            images.forEach {
+                Image(
+                    rememberImagePainter(it.uri),
+                    contentDescription = null,
+                    modifier = Modifier.size(128.dp)
+                )
+            }
+            Button(onClick = {
+                if (ContextCompat.checkSelfPermission(
+                        vm.context,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    takingPicture.value = true
+                } else {
+                    launcher.launch(Manifest.permission.CAMERA)
+                }
+            }) {
+                Text("Take Picture")
+            }
+            Button(onClick = {
+                vm.snooze(habit, duration)
+            }) {
+                Text("Snooze")
+            }
+            Button(onClick = {
+                vm.cancel(habit)
+            }) {
+                Text("Cancel")
+            }
+            Button(onClick = {
+                vm.done(habit, journalEntry.value)
+            }) {
+                Text("Done")
+            }
         }
     }
 }

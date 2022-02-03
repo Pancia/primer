@@ -24,7 +24,7 @@ class HabitStorage(private val context: Context) {
         habit.journalEntries = habitJournalStorageFor(habit.id).all.entries
             .sortedBy { it.key }
             .reversed()
-            .map { JournalEntry(it.key, it.value as String) }
+            .map { JournalEntry.Text(it.key, it.value as String) }
         return habit
     }
 

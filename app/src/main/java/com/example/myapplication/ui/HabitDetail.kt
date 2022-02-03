@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.example.myapplication.Habit
+import com.example.myapplication.JournalEntry
 import java.util.*
 
 class HabitDetailViewModel(context: Context) : ViewModel() {
@@ -72,7 +73,7 @@ fun HabitDetail(
         Text(text = "Journal Entries:")
         habit.journalEntries.forEach {
             TextField(
-                value = it.text,
+                value = (it as JournalEntry.Text).text,
                 onValueChange = {},
                 label = { Text("Entry @ ${it.at}") },
                 readOnly = true

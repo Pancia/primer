@@ -13,23 +13,20 @@ fun MyApp(nav: NavHostController, context: Context) {
     NavHost(navController = nav, startDestination = NavRoute.Home.create()) {
         composable(NavRoute.Home.route) { Home(nav) }
         composable(NavRoute.ListOfHabits.route) {
-            val habitsListViewModel: HabitsListViewModel =
-                viewModel(factory = HabitsListViewModel.provideFactory(context))
-            HabitsList(nav, habitsListViewModel)
+            val vm: HabitsListViewModel =
+                viewModel(factory = HabitsListViewModel.provideFactory(context, nav))
+            HabitsList(vm)
         }
         composable(NavRoute.HabitDetail.route) {
-            val habitDetailViewModel: HabitDetailViewModel =
+            val vm: HabitDetailViewModel =
                 viewModel(factory = HabitDetailViewModel.provideFactory(context))
-            HabitDetail(
-                nav,
-                habitDetailViewModel,
-                it.arguments?.getString("habitID")!!
-            )
+            val habitID = it.arguments?.getString("habitID")!!
+            HabitDetail(vm, habitID)
         }
         composable(NavRoute.PickHabit.route) {
-            val habitsListViewModel: HabitsListViewModel =
-                viewModel(factory = HabitsListViewModel.provideFactory(context))
-            HabitPicker(nav, habitsListViewModel)
+            val vm: HabitsListViewModel =
+                viewModel(factory = HabitsListViewModel.provideFactory(context, nav))
+            HabitPicker(vm)
         }
         composable(
             NavRoute.SetTimer.route,
@@ -39,16 +36,10 @@ fun MyApp(nav: NavHostController, context: Context) {
             )
         ) {
             val habitID = it.arguments?.getString("habitID")!!
-            val timerViewModel: TimerViewModel =
-                viewModel(
-                    factory = TimerViewModel.provideFactory(
-                        context,
-                        nav,
-                        habitID,
-                        it.arguments?.getInt("duration")
-                    )
-                )
-            HabitTimer(timerViewModel, habitID)
+            val duration = it.arguments?.getInt("duration")
+            val vm: TimerViewModel =
+                viewModel(factory = TimerViewModel.provideFactory(context, nav, habitID, duration))
+            HabitTimer(vm, habitID)
         }
         composable(
             NavRoute.HabitRunning.route,
@@ -57,16 +48,12 @@ fun MyApp(nav: NavHostController, context: Context) {
                 navArgument("duration") { type = NavType.IntType }
             )
         ) {
-            val runningViewModel: RunningViewModel =
-                viewModel(factory = RunningViewModel.provideFactory(context, nav))
+            val habitID = it.arguments?.getString("habitID")!!
             val duration = it.arguments?.getInt("duration")!!
-            runningViewModel.startCountdown(duration)
-            HabitRunning(
-                nav,
-                runningViewModel,
-                it.arguments?.getString("habitID")!!,
-                duration
-            )
+            val vm: RunningViewModel =
+                viewModel(factory = RunningViewModel.provideFactory(context, nav))
+            vm.startCountdown(duration)
+            HabitRunning(vm, habitID, duration)
         }
     }
 }

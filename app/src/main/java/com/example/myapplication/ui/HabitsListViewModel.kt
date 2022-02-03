@@ -4,9 +4,13 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavHostController
 import com.example.myapplication.Habit
 
-class HabitsListViewModel(context: Context) : ViewModel() {
+class HabitsListViewModel(
+    context: Context,
+    private val nav: NavHostController
+) : ViewModel() {
     val habits = mutableStateListOf<Habit>()
     private val storage = HabitStorage(context)
 
@@ -25,12 +29,22 @@ class HabitsListViewModel(context: Context) : ViewModel() {
         storage.deleteAll()
     }
 
+    fun navToHabit(habit: Habit) {
+        nav.navigate(NavRoute.HabitDetail.create(habit.id))
+    }
+
+    fun navToTimer(habit: Habit) {
+        nav.navigate(NavRoute.SetTimer.create(habit.id)) {
+            popUpTo(NavRoute.Home.route)
+        }
+    }
+
     companion object {
-        fun provideFactory(context: Context):
+        fun provideFactory(context: Context, nav: NavHostController):
                 ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return HabitsListViewModel(context) as T
+                return HabitsListViewModel(context, nav) as T
             }
         }
     }

@@ -17,7 +17,7 @@ fun addRandomHabit(vm: HabitsListViewModel) {
 }
 
 @Composable
-fun HabitsList(nav: NavHostController, vm: HabitsListViewModel) {
+fun HabitsList(vm: HabitsListViewModel) {
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -31,7 +31,7 @@ fun HabitsList(nav: NavHostController, vm: HabitsListViewModel) {
         }
         vm.habits.sortedBy { it.title }.forEach {
             Button(modifier = Modifier.padding(10.dp),
-                onClick = { nav.navigate(NavRoute.HabitDetail.create(it.id)) }) {
+                onClick = { vm.navToHabit(it) }) {
                 Text(text = it.title)
             }
         }

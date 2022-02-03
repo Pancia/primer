@@ -46,7 +46,6 @@ class HabitDetailViewModel(context: Context) : ViewModel() {
 
 @Composable
 fun HabitDetail(
-    nav: NavHostController,
     vm: HabitDetailViewModel,
     habitID: String
 ) {

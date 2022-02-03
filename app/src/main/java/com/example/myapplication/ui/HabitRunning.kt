@@ -75,21 +75,24 @@ class RunningViewModel(
     }
 
     fun done(habit: Habit, journalEntry: String) {
+        timer.cancel()
         cancelAlarm(habit.id)
         saveJournalEntry(habit.id, journalEntry)
         nav.navigate(NavRoute.PickHabit.create()) {
-            popUpTo(NavRoute.PickHabit.route) { inclusive = true }
+            popUpTo(NavRoute.Home.route)
         }
     }
 
     fun cancel(habit: Habit) {
+        timer.cancel()
         cancelAlarm(habit.id)
         nav.navigate(NavRoute.PickHabit.create()) {
-            popUpTo(NavRoute.PickHabit.route) { inclusive = true }
+            popUpTo(NavRoute.Home.route)
         }
     }
 
     fun snooze(habit: Habit, duration: Int) {
+        timer.cancel()
         cancelAlarm(habit.id)
         nav.navigate(NavRoute.SetTimer.create(habit.id, duration))
     }
@@ -107,7 +110,6 @@ class RunningViewModel(
 
 @Composable
 fun HabitRunning(
-    nav: NavHostController,
     vm: RunningViewModel,
     habitID: String,
     duration: Int // minutes

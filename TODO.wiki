@@ -1,11 +1,10 @@
 # tasks
 - [ ] take photo -> journal entry
-- [ ] pick an alarm sound
 - [ ] export storage as ?
+- [ ] pick an alarm sound
 
 # refactorings
 - [ ] refactor navigation actions into viewmodel
 
 # bugs
-- [ ] clicking done should not let you go back
 - [ ] going back to list from detail should refresh list of habits, couldve edited

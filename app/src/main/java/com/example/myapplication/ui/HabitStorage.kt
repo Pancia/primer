@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.myapplication.Habit
 import com.example.myapplication.JournalEntry
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -60,11 +61,19 @@ class HabitStorage(private val context: Context) {
             .apply()
     }
 
+    fun getImageOutputDirectory(habitID: UUID): File {
+        return context.externalMediaDirs.first().let {
+            File(it, "MyApplication/${habitID}/images").apply { mkdirs() }
+        }
+    }
+
     fun deleteAll() {
         habitsTitleByID.all.keys.forEach {
             val id = UUID.fromString(it)
             habitInfoStorageFor(id).edit().clear().apply()
             habitJournalStorageFor(id).edit().clear().apply()
+            File(context.externalMediaDirs.first(), "MyApplication")
+                .deleteRecursively()
         }
         habitsTitleByID.edit().clear().apply()
     }

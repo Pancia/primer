@@ -33,6 +33,7 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.myapplication.Habit
 import com.example.myapplication.MyApplication
+import java.io.File
 import java.util.*
 import kotlin.math.floor
 
@@ -73,6 +74,9 @@ class RunningViewModel(
     fun editDescription(id: UUID, desc: String) {
         storage.editDescription(id, desc)
     }
+
+    fun getImageOutputDirectory(habitID: UUID): File =
+        storage.getImageOutputDirectory(habitID)
 
     private fun saveJournalEntry(id: UUID, entry: String, images: List<Uri>) {
         storage.addJournalEntry(id, entry, images)
@@ -149,7 +153,7 @@ fun HabitRunning(
             journalImages.add(uri)
         }, onError = { e ->
             Log.e("DBG", "err: $e")
-        })
+        }, getOutputDirectory = { vm.getImageOutputDirectory(habit.id) })
     } else {
         Column(
             modifier = Modifier

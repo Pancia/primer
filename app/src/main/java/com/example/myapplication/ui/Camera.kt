@@ -1,12 +1,9 @@
 package com.example.myapplication.ui
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.webkit.MimeTypeMap
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -22,7 +19,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,41 +41,39 @@ import kotlin.coroutines.suspendCoroutine
 
 sealed class CameraUIAction {
     object OnCameraClick : CameraUIAction()
-    object OnGalleryViewClick : CameraUIAction()
     object OnSwitchCameraClick : CameraUIAction()
 }
 
 @Composable
-fun CameraView(onImageCaptured: (Uri, Boolean) -> Unit, onError: (ImageCaptureException) -> Unit) {
+fun CameraView(
+    getOutputDirectory: () -> File,
+    onImageCaptured: (Uri, Boolean) -> Unit,
+    onError: (ImageCaptureException) -> Unit
+) {
     val context = LocalContext.current
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
         ImageCapture.Builder().build()
     }
-    val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { onImageCaptured(it, true) }
-    }
-
     CameraPreviewView(
         imageCapture,
         lensFacing
     ) { cameraUIAction ->
         when (cameraUIAction) {
             is CameraUIAction.OnCameraClick -> {
-                imageCapture.takePicture(context, lensFacing, onImageCaptured, onError)
+                imageCapture.takePicture(
+                    context,
+                    lensFacing,
+                    getOutputDirectory,
+                    onImageCaptured,
+                    onError
+                )
             }
             is CameraUIAction.OnSwitchCameraClick -> {
                 lensFacing =
                     if (lensFacing == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT
                     else
                         CameraSelector.LENS_FACING_BACK
-            }
-            is CameraUIAction.OnGalleryViewClick -> {
-                if (true == context.getOutputDirectory().listFiles()?.isNotEmpty()) {
-                    galleryLauncher.launch("image/*")
-                }
             }
         }
     }
@@ -156,12 +150,6 @@ fun CameraControls(cameraUIAction: (CameraUIAction) -> Unit) {
                 .border(1.dp, Color.White, CircleShape),
             onClick = { cameraUIAction(CameraUIAction.OnCameraClick) }
         )
-        /*CameraControl(
-            Icons.Default.ShoppingCart,
-            "pick from gallery",
-            modifier = Modifier.size(64.dp),
-            onClick = { cameraUIAction(CameraUIAction.OnGalleryViewClick) }
-        )*/
     }
 }
 
@@ -186,18 +174,18 @@ fun CameraControl(
 }
 
 private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
-private const val PHOTO_EXTENSION = ".jpg"
 
 fun ImageCapture.takePicture(
     context: Context,
     lensFacing: Int,
+    getOutputDirectory: () -> File,
     onImageCaptured: (Uri, Boolean) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
-    val outputDirectory = context.getOutputDirectory()
     val time = SimpleDateFormat(FILENAME, Locale.US)
         .format(System.currentTimeMillis())
-    val photoFile = File(outputDirectory, time + PHOTO_EXTENSION)
+    val outputDirectory = getOutputDirectory()
+    val photoFile = File(outputDirectory, "$time.jpg")
     val outputFileOptions = getOutputFileOptions(lensFacing, photoFile)
     this.takePicture(
         outputFileOptions,
@@ -214,9 +202,7 @@ fun ImageCapture.takePicture(
                     context,
                     arrayOf(savedUri.toFile().absolutePath),
                     arrayOf(mimeType)
-                ) { _, uri ->
-
-                }
+                ) { _, uri -> }
                 onImageCaptured(savedUri, false)
             }
 
@@ -236,12 +222,4 @@ fun getOutputFileOptions(
     return ImageCapture.OutputFileOptions.Builder(photoFile)
         .setMetadata(metadata)
         .build()
-}
-
-fun Context.getOutputDirectory(): File {
-    val mediaDir = this.externalMediaDirs.firstOrNull()?.let {
-        File(it, "MyApplication").apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists())
-        mediaDir else this.filesDir
 }

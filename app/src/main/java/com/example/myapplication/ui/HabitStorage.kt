@@ -9,56 +9,75 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import com.beust.klaxon.*
+
+private val uuidConverter = object : Converter {
+    override fun canConvert(cls: Class<*>) = cls == UUID::class.java
+    override fun toJson(value: Any): String = """{"uuid" : "${value as UUID}"}"""
+    override fun fromJson(jv: JsonValue) = UUID.fromString(jv.objString("uuid"))
+}
 
 class HabitStorage(private val context: Context) {
-    private val habitsTitleByID = context.getSharedPreferences("habitTitleByID", 0)!!
+    private val JSON = Klaxon().converter(uuidConverter)
 
-    fun getAllTitles() =
-        habitsTitleByID.all.map { Habit(id = UUID.fromString(it.key), title = it.value as String) }
+    private fun rootDir() =
+        File(context.externalMediaDirs.first(), "MyApplication")
 
-    fun getHabitInfoByID(habitID: String): Habit {
-        val id = UUID.fromString(habitID)
-        val title = habitsTitleByID.getString(habitID, null)!!
-        val desc = habitInfoStorageFor(id).getString("description", null)!!
-        return Habit(id = id, title = title, description = desc)
-    }
+    private fun habitStorageFor(id: UUID) =
+        File(rootDir(), "$id") //context.getSharedPreferences("$id.info", 0)!!
+
+    fun getAllTitles(): List<Habit> =
+        rootDir().listFiles { f -> f.isDirectory }
+            ?.map { JSON.parse<Habit>(File(it, "info.json"))!! }
+            ?: emptyList()
+
+    fun getHabitInfoByID(habitID: String): Habit =
+        JSON.parse(File(rootDir(), "$habitID/info.json"))!!
 
     fun getHabitByID(habitID: String): Habit {
         val habit = getHabitInfoByID(habitID)
         habit.journalEntries =
-            habitJournalStorageFor(habit.id).all.entries.map {
-                val (text, images) = it.value.toString().split("<$>")
-                JournalEntry(it.key, text, images.split(",").map { Uri.parse(it) })
-            }.sortedBy { it.at }.reversed()
+            (File(rootDir(), "$habitID/entries")
+                .listFiles() ?: emptyArray<File>())
+                .map { JSON.parse<JournalEntry>(it)!! }
+                .sortedBy { it.at }
+                .reversed()
+        Log.e("DBG", habit.toString())
         return habit
     }
 
-    private fun habitInfoStorageFor(id: UUID) =
-        context.getSharedPreferences("$id.info", 0)!!
-
-    private fun habitJournalStorageFor(id: UUID) =
-        context.getSharedPreferences("$id.journals", 0)!!
-
     fun create(title: String): Habit {
         val habit = Habit(title = title)
-        habitsTitleByID.edit().putString("${habit.id}", habit.title).apply()
-        habitInfoStorageFor(habit.id).edit().putString("description", habit.description).apply()
+        File(rootDir(), "${habit.id}/info.json")
+            .apply { File(parent!!).mkdirs() }
+            .writeText(JSON.toJsonString(habit))
         return habit
     }
 
     fun editTitle(id: UUID, title: String) {
-        habitsTitleByID.edit().remove("$id").putString("$id", title).apply()
+        val info = File(rootDir(), "$id/info.json")
+        val habit = JSON.parse<Habit>(info)!!
+        habit.title = title
+        info.writeText(JSON.toJsonString(habit))
     }
 
     fun editDescription(id: UUID, description: String) {
-        habitInfoStorageFor(id).edit().putString("description", description).apply()
+        val info = File(rootDir(), "$id/info.json")
+        val habit = JSON.parse<Habit>(info)!!
+        habit.description = description
+        info.writeText(JSON.toJsonString(habit))
     }
 
-    fun addJournalEntry(id: UUID, text: String, images: List<Uri>) {
+    fun addJournalEntry(id: UUID, text: String, images: List<String>) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
-        habitJournalStorageFor(id).edit()
-            .putString(now, text + "<$>" + images.joinToString(","))
-            .apply()
+        File(rootDir(), "$id/entries/$now.json").apply {
+            File(parent!!).mkdirs()
+            val entry = JournalEntry(now, text, images)
+            Log.e("DBG", "entry: $entry")
+            val json = JSON.toJsonString(entry)
+            Log.e("DBG", "json: $json")
+            writeText(json)
+        }
     }
 
     fun getImageOutputDirectory(habitID: UUID): File {
@@ -68,13 +87,7 @@ class HabitStorage(private val context: Context) {
     }
 
     fun deleteAll() {
-        habitsTitleByID.all.keys.forEach {
-            val id = UUID.fromString(it)
-            habitInfoStorageFor(id).edit().clear().apply()
-            habitJournalStorageFor(id).edit().clear().apply()
-            File(context.externalMediaDirs.first(), "MyApplication")
-                .deleteRecursively()
-        }
-        habitsTitleByID.edit().clear().apply()
+        File(context.externalMediaDirs.first(), "MyApplication")
+            .deleteRecursively()
     }
 }

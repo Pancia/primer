@@ -78,7 +78,7 @@ class RunningViewModel(
     fun getImageOutputDirectory(habitID: UUID): File =
         storage.getImageOutputDirectory(habitID)
 
-    private fun saveJournalEntry(id: UUID, entry: String, images: List<Uri>) {
+    private fun saveJournalEntry(id: UUID, entry: String, images: List<String>) {
         storage.addJournalEntry(id, entry, images)
     }
 
@@ -89,7 +89,7 @@ class RunningViewModel(
             .cancel(0)
     }
 
-    fun done(habit: Habit, text: String, images: MutableList<Uri>) {
+    fun done(habit: Habit, text: String, images: MutableList<String>) {
         timer.cancel()
         cancelAlarm(habit.id)
         saveJournalEntry(habit.id, text, images)
@@ -133,7 +133,7 @@ fun HabitRunning(
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
     val journalText = remember { mutableStateOf("") }
-    val journalImages = remember { mutableListOf<Uri>() }
+    val journalImages = remember { mutableListOf<String>() }
     val takingPicture = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -150,7 +150,7 @@ fun HabitRunning(
         CameraView(onImageCaptured = { uri, fromGallery ->
             Log.e("DBG", "uri: $uri, $fromGallery")
             takingPicture.value = false
-            journalImages.add(uri)
+            journalImages.add("$uri")
         }, onError = { e ->
             Log.e("DBG", "err: $e")
         }, getOutputDirectory = { vm.getImageOutputDirectory(habit.id) })

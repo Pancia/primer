@@ -1,6 +1,7 @@
 package com.example.myapplication.ui
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -82,7 +83,7 @@ fun HabitDetail(
                     TextField(
                         value = entry.text,
                         onValueChange = {},
-                        label = { Text("Entry @ ${entry.at}") },
+                        label = { Text(entry.at) },
                         readOnly = true
                     )
                 }
@@ -90,7 +91,7 @@ fun HabitDetail(
                     LazyRow {
                         items(entry.images) { uri ->
                             Image(
-                                rememberImagePainter(uri),
+                                rememberImagePainter(Uri.parse(uri)),
                                 contentDescription = null,
                                 modifier = Modifier.size(128.dp)
                             )

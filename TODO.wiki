@@ -7,8 +7,8 @@
         - [X] in habit detail
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
-- [ ] habitstorage -> filesystem externalmediadirs
-    - [ ] store journal entry image in folder system
+- [X] habitstorage -> filesystem externalmediadirs
+    - [X] store journal entry image in folder system
 - [ ] pick an alarm sound
 - [ ] ui polish
     - [ ] top nav bar

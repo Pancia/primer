@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,16 +42,16 @@ class RunningViewModel(
 ) : ViewModel() {
     private lateinit var timer: CountDownTimer
 
-    val timeLeft = mutableStateOf(0L)
+    private val globals = (context as MyApplication).globals
+
+    val timeLeft = mutableStateOf(0)
 
     fun startCountdown(duration: Int) {
-        timeLeft.value = duration.toLong()
-        // TODO FIXME multiply duration by 60
-        timer = object : CountDownTimer(duration * 1000L, 1000) {
+        timeLeft.value = globals.timer.timeLeft()
+        timer = object : CountDownTimer(duration * 60 * 1000L, 1000) {
             override fun onTick(millisLeft: Long) {
-                timeLeft.value = floor(millisLeft / 1000.0).toLong()
+                timeLeft.value = globals.timer.timeLeft()
             }
-
             override fun onFinish() {}
         }.start()
     }
@@ -62,7 +61,7 @@ class RunningViewModel(
         timer.cancel()
     }
 
-    private val storage = HabitStorage(context)
+    private val storage = globals.storage
 
     fun getHabitInfo(habitID: String): Habit =
         storage.getHabitInfoByID(habitID)
@@ -83,6 +82,7 @@ class RunningViewModel(
     }
 
     private fun cancelAlarm(habitID: UUID) {
+        globals.timer.clear()
         Alarm.stopAlarm(context, "$habitID")
         (context as MyApplication).stopAlarm()
         (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -106,10 +106,10 @@ class RunningViewModel(
         }
     }
 
-    fun snooze(habit: Habit, duration: Int) {
+    fun snooze(habit: Habit) {
         timer.cancel()
         cancelAlarm(habit.id)
-        nav.navigate(NavRoute.SetTimer.create(habit.id, duration))
+        nav.navigate(NavRoute.SetTimer.create(habit.id))
     }
 
     companion object {
@@ -127,7 +127,7 @@ class RunningViewModel(
 fun HabitRunning(
     vm: RunningViewModel,
     habitID: String,
-    duration: Int // minutes
+    _duration: Int
 ) {
     val habit = vm.getHabitInfo(habitID)
     val title = remember { mutableStateOf(habit.title) }
@@ -215,7 +215,7 @@ fun HabitRunning(
                 Text("Take Picture")
             }
             Button(onClick = {
-                vm.snooze(habit, duration)
+                vm.snooze(habit)
             }) {
                 Text("Snooze")
             }

@@ -6,20 +6,46 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.Ringtone
 import android.media.RingtoneManager
-import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
+import com.example.myapplication.ui.HabitStorage
 import com.example.myapplication.ui.myNotifChID
+import kotlin.math.ceil
+import java.util.*
 
-class AppContainer(private val applicationContext: Context) {
+class HabitTimer() {
+    val activeHabit = mutableStateOf<UUID?>(null)
+    private val triggerTime = mutableStateOf<Long?>(null)
+
+    fun init(habitID: String, time: Int) {
+        activeHabit.value = UUID.fromString(habitID)
+        triggerTime.value = System.currentTimeMillis() + time * 60 * 1000
+    }
+
+    fun clear() {
+        activeHabit.value = null
+        triggerTime.value = null
+    }
+
+    fun timeLeft(): Int {
+        val millisLeft = (triggerTime.value?.let {
+            it - System.currentTimeMillis()
+        } ?: 0)
+        return ceil(millisLeft / 60 / 1000.0).toInt()
+    }
+}
+
+class Globals(context: Context) {
+    val storage = HabitStorage(context)
+    val timer = HabitTimer()
 }
 
 class MyApplication : Application() {
-    // AppContainer instance used by the rest of classes to obtain dependencies
-    lateinit var container: AppContainer
+    lateinit var globals: Globals
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
+        globals = Globals(this)
         createNotificationChannels()
     }
 

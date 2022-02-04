@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.example.myapplication.Habit
+import com.example.myapplication.MyApplication
 import java.util.*
 
 const val myNotifChID = "MY_CHANNEL"
@@ -33,24 +34,27 @@ class TimerViewModel(
         time.value = time.value + if (isAddition.value) i else -i
     }
 
-    private val storage = HabitStorage(context)
+    private val storage = (context as MyApplication).globals.storage
+    private val globals = (context as MyApplication).globals
 
     fun getHabitInfo(habitID: String): Habit =
         storage.getHabitInfoByID(habitID)
 
     fun start(time: Int) {
+        globals.timer.init(habitID, time)
         Alarm.startAlarm(context, habitID, time)
-        nav.navigate(
-            NavRoute.HabitRunning.create(
-                UUID.fromString(habitID),
-                time
-            )
-        )
+        nav.navigate(NavRoute.HabitRunning.create(UUID.fromString(habitID), time)) {
+            popUpTo(NavRoute.Home.route)
+        }
     }
 
     companion object {
-        fun provideFactory(context: Context, nav: NavHostController, habitID: String, initialDuration: Int?):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        fun provideFactory(
+            context: Context,
+            nav: NavHostController,
+            habitID: String,
+            initialDuration: Int?
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return TimerViewModel(context, nav, habitID, initialDuration) as T

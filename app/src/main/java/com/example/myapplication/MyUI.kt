@@ -9,9 +9,10 @@ import androidx.navigation.compose.composable
 import com.example.myapplication.ui.*
 
 @Composable
-fun MyApp(nav: NavHostController, context: Context) {
+fun MyApp(nav: NavHostController, application: MyApplication) {
+    val context = application as Context
     NavHost(navController = nav, startDestination = NavRoute.Home.create()) {
-        composable(NavRoute.Home.route) { Home(nav) }
+        composable(NavRoute.Home.route) { Home(context, nav) }
         composable(NavRoute.ListOfHabits.route) {
             val vm: HabitsListViewModel =
                 viewModel(factory = HabitsListViewModel.provideFactory(context, nav))

@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 nav = rememberNavController()
-                MyApp(nav, application)
+                MyApp(nav, application as MyApplication)
                 navigateTo(route)
             }
         }

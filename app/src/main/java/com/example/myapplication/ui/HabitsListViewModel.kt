@@ -6,13 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.example.myapplication.Habit
+import com.example.myapplication.MyApplication
 
 class HabitsListViewModel(
     context: Context,
     private val nav: NavHostController
 ) : ViewModel() {
     val habits = mutableStateListOf<Habit>()
-    private val storage = HabitStorage(context)
+    private val storage = (context as MyApplication).globals.storage
 
     init {
         habits.addAll(storage.getAllTitles())
@@ -34,9 +35,7 @@ class HabitsListViewModel(
     }
 
     fun navToTimer(habit: Habit) {
-        nav.navigate(NavRoute.SetTimer.create(habit.id)) {
-            popUpTo(NavRoute.Home.route)
-        }
+        nav.navigate(NavRoute.SetTimer.create(habit.id))
     }
 
     companion object {

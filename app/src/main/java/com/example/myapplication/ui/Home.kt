@@ -1,5 +1,6 @@
 package com.example.myapplication.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -10,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.myapplication.MyApplication
 
 @Composable
-fun Home(nav: NavController) {
+fun Home(context: Context, nav: NavController) {
+    val globals = (context as MyApplication).globals
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -23,8 +26,21 @@ fun Home(nav: NavController) {
         Button(onClick = { nav.navigate(NavRoute.ListOfHabits.create()) }) {
             Text(text = "List of Habits")
         }
-        Button(onClick = { nav.navigate(NavRoute.PickHabit.create()) }) {
-            Text(text = "Start Day")
+        if (globals.timer.activeHabit.value == null) {
+            Button(onClick = { nav.navigate(NavRoute.PickHabit.create()) }) {
+                Text(text = "Start Day")
+            }
+        } else {
+            Button(onClick = {
+                nav.navigate(
+                    NavRoute.HabitRunning.create(
+                        globals.timer.activeHabit.value!!,
+                        globals.timer.timeLeft()
+                    )
+                )
+            }) {
+                Text(text = "GOTO: ${globals.timer.activeHabit.value}")
+            }
         }
     }
 }

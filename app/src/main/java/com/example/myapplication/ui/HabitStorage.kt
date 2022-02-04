@@ -1,7 +1,6 @@
 package com.example.myapplication.ui
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.example.myapplication.Habit
 import com.example.myapplication.JournalEntry
@@ -18,7 +17,7 @@ private val uuidConverter = object : Converter {
 }
 
 class HabitStorage(private val context: Context) {
-    private val JSON = Klaxon().converter(uuidConverter)
+    private val json = Klaxon().converter(uuidConverter)
 
     private fun rootDir() =
         File(context.externalMediaDirs.first(), "MyApplication")
@@ -28,21 +27,20 @@ class HabitStorage(private val context: Context) {
 
     fun getAllTitles(): List<Habit> =
         rootDir().listFiles { f -> f.isDirectory }
-            ?.map { JSON.parse<Habit>(File(it, "info.json"))!! }
+            ?.map { json.parse<Habit>(File(it, "info.json"))!! }
             ?: emptyList()
 
     fun getHabitInfoByID(habitID: String): Habit =
-        JSON.parse(File(rootDir(), "$habitID/info.json"))!!
+        json.parse(File(rootDir(), "$habitID/info.json"))!!
 
     fun getHabitByID(habitID: String): Habit {
         val habit = getHabitInfoByID(habitID)
         habit.journalEntries =
             (File(rootDir(), "$habitID/entries")
                 .listFiles() ?: emptyArray<File>())
-                .map { JSON.parse<JournalEntry>(it)!! }
+                .map { json.parse<JournalEntry>(it)!! }
                 .sortedBy { it.at }
                 .reversed()
-        Log.e("DBG", habit.toString())
         return habit
     }
 
@@ -50,22 +48,22 @@ class HabitStorage(private val context: Context) {
         val habit = Habit(title = title)
         File(rootDir(), "${habit.id}/info.json")
             .apply { File(parent!!).mkdirs() }
-            .writeText(JSON.toJsonString(habit))
+            .writeText(json.toJsonString(habit))
         return habit
     }
 
     fun editTitle(id: UUID, title: String) {
         val info = File(rootDir(), "$id/info.json")
-        val habit = JSON.parse<Habit>(info)!!
+        val habit = json.parse<Habit>(info)!!
         habit.title = title
-        info.writeText(JSON.toJsonString(habit))
+        info.writeText(json.toJsonString(habit))
     }
 
     fun editDescription(id: UUID, description: String) {
         val info = File(rootDir(), "$id/info.json")
-        val habit = JSON.parse<Habit>(info)!!
+        val habit = json.parse<Habit>(info)!!
         habit.description = description
-        info.writeText(JSON.toJsonString(habit))
+        info.writeText(json.toJsonString(habit))
     }
 
     fun addJournalEntry(id: UUID, text: String, images: List<String>) {
@@ -73,9 +71,7 @@ class HabitStorage(private val context: Context) {
         File(rootDir(), "$id/entries/$now.json").apply {
             File(parent!!).mkdirs()
             val entry = JournalEntry(now, text, images)
-            Log.e("DBG", "entry: $entry")
-            val json = JSON.toJsonString(entry)
-            Log.e("DBG", "json: $json")
+            val json = json.toJsonString(entry)
             writeText(json)
         }
     }

@@ -24,10 +24,11 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.myapplication.Habit
 import com.example.myapplication.JournalEntry
+import com.example.myapplication.MyApplication
 import java.util.*
 
 class HabitDetailViewModel(context: Context) : ViewModel() {
-    private val storage = HabitStorage(context)
+    private val storage = (context as MyApplication).globals.storage
 
     fun getHabitByID(habitID: String): Habit =
         storage.getHabitByID(habitID)

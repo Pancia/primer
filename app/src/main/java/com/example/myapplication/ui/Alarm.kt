@@ -49,8 +49,7 @@ class Alarm() : BroadcastReceiver() {
             val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             am.setAlarmClock(
                 AlarmManager.AlarmClockInfo(
-                    System.currentTimeMillis() + time * 1000,
-                    // TODO: (* 60) seconds in a minute
+                    System.currentTimeMillis() + time * 60 * 1000,
                     null
                 ), pi
             )

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.CountDownTimer
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -13,12 +14,14 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,7 +37,6 @@ import com.example.myapplication.Habit
 import com.example.myapplication.MyApplication
 import java.io.File
 import java.util.*
-import kotlin.math.floor
 
 class RunningViewModel(
     val context: Context,
@@ -47,11 +49,12 @@ class RunningViewModel(
     val timeLeft = mutableStateOf(0)
 
     fun startCountdown(duration: Int) {
-        timeLeft.value = globals.timer.timeLeft()
+        timeLeft.value = globals.timeKeeper.timeLeft()
         timer = object : CountDownTimer(duration * 60 * 1000L, 1000) {
             override fun onTick(millisLeft: Long) {
-                timeLeft.value = globals.timer.timeLeft()
+                timeLeft.value = globals.timeKeeper.timeLeft()
             }
+
             override fun onFinish() {}
         }.start()
     }
@@ -82,7 +85,7 @@ class RunningViewModel(
     }
 
     private fun cancelAlarm(habitID: UUID) {
-        globals.timer.clear()
+        globals.timeKeeper.clear()
         Alarm.stopAlarm(context, "$habitID")
         (context as MyApplication).stopAlarm()
         (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
@@ -110,6 +113,19 @@ class RunningViewModel(
         timer.cancel()
         cancelAlarm(habit.id)
         nav.navigate(NavRoute.SetTimer.create(habit.id))
+    }
+
+    fun takePicture(
+        launcher: ManagedActivityResultLauncher<String, Boolean>,
+        takingPicture: MutableState<Boolean>
+    ) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            takingPicture.value = true
+        } else {
+            launcher.launch(Manifest.permission.CAMERA)
+        }
     }
 
     companion object {
@@ -155,79 +171,96 @@ fun HabitRunning(
             Log.e("DBG", "err: $e")
         }, getOutputDirectory = { vm.getImageOutputDirectory(habit.id) })
     } else {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(1f)
-                .fillMaxWidth(1f),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TextField(
-                value = title.value,
-                onValueChange = { title.value = it },
-                label = { Text("Title") },
-                modifier = Modifier.onFocusChanged {
-                    vm.editTitle(habit.id, title.value)
-                }
-            )
-            Text("duration: ${vm.timeLeft.value}")
-            TextField(
-                value = description.value,
-                onValueChange = { description.value = it },
-                label = { Text("Description") },
-                modifier = Modifier.onFocusChanged {
-                    vm.editDescription(habit.id, description.value)
-                }
-            )
-            TextField(
-                value = journalText.value,
-                onValueChange = { journalText.value = it },
-                label = { Text("Journal Entry") }
-            )
-            if (journalImages.isNotEmpty()) {
-                LazyRow(
-                    modifier = Modifier.scrollable(
-                        orientation = Orientation.Horizontal,
-                        enabled = true,
-                        state = ScrollableState { it }
-                    )
+        Scaffold(bottomBar = {
+            BottomAppBar {
+                IconButton(
+                    onClick = { vm.takePicture(launcher, takingPicture) },
+                    modifier = Modifier.weight(1f)
                 ) {
-                    items(journalImages) {
-                        Image(
-                            rememberImagePainter(it),
-                            contentDescription = null,
-                            modifier = Modifier.size(128.dp)
+                    Icon(Icons.Default.Add, "Take a Picture")
+                }
+                IconButton(onClick = { vm.cancel(habit) }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Clear, "Cancel")
+                }
+                IconButton(onClick = {
+                    vm.done(habit, journalText.value, journalImages)
+                }, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Done, "Done")
+                }
+            }
+        }, topBar = {
+            TopAppBar() {
+                TextField(
+                    value = title.value,
+                    onValueChange = { title.value = it },
+                    textStyle = MaterialTheme.typography.h6,
+                    modifier = Modifier.onFocusChanged {
+                        vm.editTitle(habit.id, title.value)
+                    }
+                )
+            }
+        }) {
+            Column(modifier = Modifier.fillMaxHeight(0.9f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(onClick = { vm.snooze(habit) }) {
+                        Icon(Icons.Default.Edit, "Snooze")
+                        Text(
+                            " duration: ${vm.timeLeft.value}",
+                            style = MaterialTheme.typography.h4
                         )
                     }
                 }
-            }
-            Button(onClick = {
-                if (ContextCompat.checkSelfPermission(
-                        vm.context,
-                        Manifest.permission.CAMERA
-                    ) == PackageManager.PERMISSION_GRANTED
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight(1f)
+                        .fillMaxWidth(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    takingPicture.value = true
-                } else {
-                    launcher.launch(Manifest.permission.CAMERA)
+                    item {
+                        TextField(
+                            value = description.value,
+                            onValueChange = { description.value = it },
+                            label = { Text("Description") },
+                            textStyle = MaterialTheme.typography.h5,
+                            modifier = Modifier
+                                .onFocusChanged {
+                                    vm.editDescription(habit.id, description.value)
+                                }
+                                .fillMaxWidth(1f)
+                        )
+                    }
+                    item {
+                        TextField(
+                            value = journalText.value,
+                            onValueChange = { journalText.value = it },
+                            label = { Text("Journal Entry") },
+                            textStyle = MaterialTheme.typography.h5,
+                            modifier = Modifier.fillMaxWidth(1f)
+                        )
+                    }
+                    if (journalImages.isNotEmpty()) {
+                        item {
+                            LazyRow(
+                                modifier = Modifier.scrollable(
+                                    orientation = Orientation.Horizontal,
+                                    enabled = true,
+                                    state = ScrollableState { it }
+                                )
+                            ) {
+                                items(journalImages) {
+                                    Image(
+                                        rememberImagePainter(it),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(128.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
-            }) {
-                Text("Take Picture")
-            }
-            Button(onClick = {
-                vm.snooze(habit)
-            }) {
-                Text("Snooze")
-            }
-            Button(onClick = {
-                vm.cancel(habit)
-            }) {
-                Text("Cancel")
-            }
-            Button(onClick = {
-                vm.done(habit, journalText.value, journalImages)
-            }) {
-                Text("Done")
             }
         }
     }

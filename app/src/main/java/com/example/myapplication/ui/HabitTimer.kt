@@ -3,6 +3,7 @@ package com.example.myapplication.ui
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +42,7 @@ class TimerViewModel(
         storage.getHabitInfoByID(habitID)
 
     fun start(time: Int) {
-        globals.timer.init(habitID, time)
+        globals.timeKeeper.init(habitID, time)
         Alarm.startAlarm(context, habitID, time)
         nav.navigate(NavRoute.HabitRunning.create(UUID.fromString(habitID), time)) {
             popUpTo(NavRoute.Home.route)
@@ -82,12 +83,11 @@ fun HabitTimer(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(habit.title)
-        Text("${vm.time.value} minutes")
-        Row() {
-            Switch(checked = vm.isAddition.value,
-                onCheckedChange = { vm.toggleAddition() })
-            Text(if (vm.isAddition.value) "Add" else "Sub")
+        Text(habit.title, style = MaterialTheme.typography.h4)
+        Text("${vm.time.value} minutes", style = MaterialTheme.typography.h4)
+        Row {
+            Switch(checked = vm.isAddition.value, onCheckedChange = { vm.toggleAddition() })
+            Text(if (vm.isAddition.value) "Add" else "Sub", style = MaterialTheme.typography.h5)
         }
         Row(
             modifier = Modifier.fillMaxWidth(1f),

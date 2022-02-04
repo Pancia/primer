@@ -13,17 +13,17 @@ import com.example.myapplication.ui.myNotifChID
 import kotlin.math.ceil
 import java.util.*
 
-class HabitTimer() {
-    val activeHabit = mutableStateOf<UUID?>(null)
+class HabitTimeKeeper() {
+    val activeHabitID = mutableStateOf<UUID?>(null)
     private val triggerTime = mutableStateOf<Long?>(null)
 
     fun init(habitID: String, time: Int) {
-        activeHabit.value = UUID.fromString(habitID)
+        activeHabitID.value = UUID.fromString(habitID)
         triggerTime.value = System.currentTimeMillis() + time * 60 * 1000
     }
 
     fun clear() {
-        activeHabit.value = null
+        activeHabitID.value = null
         triggerTime.value = null
     }
 
@@ -37,7 +37,7 @@ class HabitTimer() {
 
 class Globals(context: Context) {
     val storage = HabitStorage(context)
-    val timer = HabitTimer()
+    val timeKeeper = HabitTimeKeeper()
 }
 
 class MyApplication : Application() {

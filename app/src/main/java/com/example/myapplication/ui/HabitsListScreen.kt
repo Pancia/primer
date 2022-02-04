@@ -1,43 +1,41 @@
 package com.example.myapplication.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
-var n = 1
-
-fun addRandomHabit(vm: HabitsListViewModel) {
-    val randomTitle = "random-habit-${n++}"
-    vm.createHabit(randomTitle)
-}
-
 @Composable
 fun HabitsList(vm: HabitsListViewModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight(1f)
-            .fillMaxWidth(1f),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Button(modifier = Modifier.padding(10.dp),
-            onClick = { vm.deleteAllHabits() }) {
-            Text(text = "Delete All Habits")
+    vm.refresh()
+    Scaffold(floatingActionButton = {
+        FloatingActionButton(onClick = {
+            val habit = vm.createHabit("TempTitle")
+            vm.navToHabit(habit)
+        }) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Create a new Habit")
         }
-        vm.habits.sortedBy { it.title }.forEach {
-            Button(modifier = Modifier.padding(10.dp),
-                onClick = { vm.navToHabit(it) }) {
-                Text(text = it.title)
+    }, floatingActionButtonPosition = FabPosition.Center) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight(1f)
+                .fillMaxWidth(1f),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+            vm.habits.sortedBy { it.title }.forEach {
+                Button(modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth(1f),
+                    onClick = { vm.navToHabit(it) }) {
+                    Text(text = it.title)
+                }
             }
-        }
-        Button(modifier = Modifier.padding(10.dp),
-            onClick = { addRandomHabit(vm) }) {
-            Text(text = "Add Random Habit")
         }
     }
 }

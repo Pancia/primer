@@ -26,7 +26,7 @@ fun Home(context: Context, nav: NavController) {
         Button(onClick = { nav.navigate(NavRoute.ListOfHabits.create()) }) {
             Text(text = "List of Habits")
         }
-        if (globals.timer.activeHabit.value == null) {
+        if (globals.timeKeeper.activeHabitID.value == null) {
             Button(onClick = { nav.navigate(NavRoute.PickHabit.create()) }) {
                 Text(text = "Start Day")
             }
@@ -34,12 +34,14 @@ fun Home(context: Context, nav: NavController) {
             Button(onClick = {
                 nav.navigate(
                     NavRoute.HabitRunning.create(
-                        globals.timer.activeHabit.value!!,
-                        globals.timer.timeLeft()
+                        globals.timeKeeper.activeHabitID.value!!,
+                        globals.timeKeeper.timeLeft()
                     )
                 )
             }) {
-                Text(text = "GOTO: ${globals.timer.activeHabit.value}")
+                val id = globals.timeKeeper.activeHabitID.value
+                val habit = globals.storage.getHabitInfoByID("$id")
+                Text(text = "GOTO: ${habit.title}")
             }
         }
     }

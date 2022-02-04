@@ -1,6 +1,9 @@
 package com.example.myapplication
 
 import android.content.Context
+import androidx.compose.material.FabPosition
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.*
@@ -39,7 +42,14 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
             val habitID = it.arguments?.getString("habitID")!!
             val duration = it.arguments?.getInt("duration")
             val vm: TimerViewModel =
-                viewModel(factory = TimerViewModel.provideFactory(context, nav, habitID, duration))
+                viewModel(
+                    factory = TimerViewModel.provideFactory(
+                        context,
+                        nav,
+                        habitID,
+                        duration
+                    )
+                )
             HabitTimer(vm, habitID)
         }
         composable(

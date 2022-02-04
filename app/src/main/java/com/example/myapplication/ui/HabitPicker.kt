@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HabitPicker(vm: HabitsListViewModel) {
+    vm.refresh()
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)
@@ -18,7 +19,7 @@ fun HabitPicker(vm: HabitsListViewModel) {
         horizontalAlignment = Alignment.Start
     ) {
         vm.habits.sortedBy { it.title }.forEach {
-            Button(modifier = Modifier.padding(10.dp),
+            Button(modifier = Modifier.padding(10.dp).fillMaxWidth(1f),
                 onClick = { vm.navToTimer(it) }) {
                 Text(text = it.title)
             }

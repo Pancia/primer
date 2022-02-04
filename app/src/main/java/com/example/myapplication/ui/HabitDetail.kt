@@ -6,10 +6,12 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -60,24 +62,30 @@ fun HabitDetail(
     val habit = vm.getHabitByID(habitID)
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
-    Column {
+    Column(modifier = Modifier.fillMaxWidth(1f)) {
         TextField(
             value = title.value,
             onValueChange = { title.value = it },
             label = { Text("Title") },
-            modifier = Modifier.onFocusChanged {
-                vm.editTitle(habit.id, title.value)
-            }
+            textStyle = MaterialTheme.typography.h5,
+            modifier = Modifier
+                .onFocusChanged {
+                    vm.editTitle(habit.id, title.value)
+                }
+                .fillMaxWidth(1f)
         )
         TextField(
             value = description.value,
             onValueChange = { description.value = it },
             label = { Text("Description") },
-            modifier = Modifier.onFocusChanged {
-                vm.editDescription(habit.id, description.value)
-            }
+            textStyle = MaterialTheme.typography.h5,
+            modifier = Modifier
+                .onFocusChanged {
+                    vm.editDescription(habit.id, description.value)
+                }
+                .fillMaxWidth(1f)
         )
-        Text(text = "Journal Entries:")
+        Text(text = "Journal Entries:", style = MaterialTheme.typography.h5)
         LazyColumn {
             items(habit.journalEntries) { entry ->
                 if (entry.text?.isNotBlank() == true) {
@@ -85,11 +93,13 @@ fun HabitDetail(
                         value = entry.text,
                         onValueChange = {},
                         label = { Text(entry.at) },
-                        readOnly = true
+                        textStyle = MaterialTheme.typography.h5,
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(1f)
                     )
                 }
                 if (entry.images.isNotEmpty()) {
-                    LazyRow {
+                    LazyRow(modifier = Modifier.fillMaxWidth(1f)) {
                         items(entry.images) { uri ->
                             Image(
                                 rememberImagePainter(Uri.parse(uri)),

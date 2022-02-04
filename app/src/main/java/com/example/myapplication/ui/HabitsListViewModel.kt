@@ -15,7 +15,8 @@ class HabitsListViewModel(
     val habits = mutableStateListOf<Habit>()
     private val storage = (context as MyApplication).globals.storage
 
-    init {
+    fun refresh() {
+        habits.clear()
         habits.addAll(storage.getAllTitles())
     }
 

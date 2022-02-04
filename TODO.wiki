@@ -1,12 +1,4 @@
-# tasks
-- [ ] ui polish
-    - [ ] top nav bar
-    - [ ] timer screen bigger buttons
-    - [ ] running screen should be scrollable as desc/journal can be long
-        - [ ] larger time left text
-        - [ ] top nav bar habit title
-        - [ ] have floating buttons actions for done/cancel/snooze
-        - [ ] take picture should be an icon / FAB
+# TODOS
 - [ ] pick an alarm sound
 - [ ] global log class, writes to file & alerts user on errors
 - [ ] rename application!
@@ -15,10 +7,9 @@
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
 
-# refactorings
+# REFACTORINGS
 - [ ] pass globals to all viewmodels
 - [ ] refactor navigation actions into viewmodel
 
-# bugs
-- [ ] going back to list from detail should refresh list of habits, habit couldve been edited
-    - [ ] will need refactoring to livedata or flow (i think, i dont quite understand what these are)
+# BUGS
+- [ ]

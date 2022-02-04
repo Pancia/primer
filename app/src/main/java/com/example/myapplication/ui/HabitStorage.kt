@@ -1,6 +1,8 @@
 package com.example.myapplication.ui
 
 import android.content.Context
+import android.net.Uri
+import android.util.Log
 import com.example.myapplication.Habit
 import com.example.myapplication.JournalEntry
 import java.time.LocalDateTime
@@ -10,7 +12,8 @@ import java.util.*
 class HabitStorage(private val context: Context) {
     private val habitsTitleByID = context.getSharedPreferences("habitTitleByID", 0)!!
 
-    fun getAllTitles() = habitsTitleByID.all.map { Habit(id = UUID.fromString(it.key), title = it.value as String) }
+    fun getAllTitles() =
+        habitsTitleByID.all.map { Habit(id = UUID.fromString(it.key), title = it.value as String) }
 
     fun getHabitInfoByID(habitID: String): Habit {
         val id = UUID.fromString(habitID)
@@ -21,10 +24,11 @@ class HabitStorage(private val context: Context) {
 
     fun getHabitByID(habitID: String): Habit {
         val habit = getHabitInfoByID(habitID)
-        habit.journalEntries = habitJournalStorageFor(habit.id).all.entries
-            .sortedBy { it.key }
-            .reversed()
-            .map { JournalEntry.Text(it.key, it.value as String) }
+        habit.journalEntries =
+            habitJournalStorageFor(habit.id).all.entries.map {
+                val (text, images) = it.value.toString().split("<$>")
+                JournalEntry(it.key, text, images.split(",").map { Uri.parse(it) })
+            }.sortedBy { it.at }.reversed()
         return habit
     }
 
@@ -49,9 +53,11 @@ class HabitStorage(private val context: Context) {
         habitInfoStorageFor(id).edit().putString("description", description).apply()
     }
 
-    fun addJournalEntry(id: UUID, entry: String) {
+    fun addJournalEntry(id: UUID, text: String, images: List<Uri>) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
-        habitJournalStorageFor(id).edit().putString(now, entry).apply()
+        habitJournalStorageFor(id).edit()
+            .putString(now, text + "<$>" + images.joinToString(","))
+            .apply()
     }
 
     fun deleteAll() {

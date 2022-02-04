@@ -1,10 +1,10 @@
 # tasks
-- [o] take photo -> journal entry
+- [O] take photo -> journal entry
     - [X] take photo / camera
     - [X] journal entry subtype image uri
-    - [o] render uri image subtype
+    - [X] render uri image subtype
         - [X] in running screen
-        - [ ] in habit detail
+        - [X] in habit detail
     - [ ] can delete in running screen
 - [ ] habitstorage -> filesystem externalmediadirs
     - [ ] store journal entry image in folder system

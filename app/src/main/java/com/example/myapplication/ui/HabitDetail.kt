@@ -2,8 +2,13 @@ package com.example.myapplication.ui
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -11,9 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.myapplication.Habit
 import com.example.myapplication.JournalEntry
 import java.util.*
@@ -25,12 +32,10 @@ class HabitDetailViewModel(context: Context) : ViewModel() {
         storage.getHabitByID(habitID)
 
     fun editTitle(id: UUID, title: String) {
-        Log.e("DBG", "editTitle: $title")
         storage.editTitle(id, title)
     }
 
     fun editDescription(id: UUID, description: String) {
-        Log.e("DBG", "editDescription: $description")
         storage.editDescription(id, description)
     }
 
@@ -71,13 +76,28 @@ fun HabitDetail(
             }
         )
         Text(text = "Journal Entries:")
-        habit.journalEntries.forEach {
-            TextField(
-                value = (it as JournalEntry.Text).text,
-                onValueChange = {},
-                label = { Text("Entry @ ${it.at}") },
-                readOnly = true
-            )
+        LazyColumn {
+            items(habit.journalEntries) { entry ->
+                if (entry.text?.isNotBlank() == true) {
+                    TextField(
+                        value = entry.text,
+                        onValueChange = {},
+                        label = { Text("Entry @ ${entry.at}") },
+                        readOnly = true
+                    )
+                }
+                if (entry.images.isNotEmpty()) {
+                    LazyRow {
+                        items(entry.images) { uri ->
+                            Image(
+                                rememberImagePainter(uri),
+                                contentDescription = null,
+                                modifier = Modifier.size(128.dp)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

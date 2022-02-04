@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -32,7 +32,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.myapplication.Habit
-import com.example.myapplication.JournalEntry
 import com.example.myapplication.MyApplication
 import java.util.*
 import kotlin.math.floor
@@ -75,8 +74,8 @@ class RunningViewModel(
         storage.editDescription(id, desc)
     }
 
-    private fun saveJournalEntry(id: UUID, entry: String) {
-        storage.addJournalEntry(id, entry)
+    private fun saveJournalEntry(id: UUID, entry: String, images: List<Uri>) {
+        storage.addJournalEntry(id, entry, images)
     }
 
     private fun cancelAlarm(habitID: UUID) {
@@ -86,10 +85,10 @@ class RunningViewModel(
             .cancel(0)
     }
 
-    fun done(habit: Habit, journalEntry: String) {
+    fun done(habit: Habit, text: String, images: MutableList<Uri>) {
         timer.cancel()
         cancelAlarm(habit.id)
-        saveJournalEntry(habit.id, journalEntry)
+        saveJournalEntry(habit.id, text, images)
         nav.navigate(NavRoute.PickHabit.create()) {
             popUpTo(NavRoute.Home.route)
         }
@@ -129,8 +128,8 @@ fun HabitRunning(
     val habit = vm.getHabitInfo(habitID)
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
-    val journalEntry = remember { mutableStateOf("") }
-    val images = remember { mutableListOf<JournalEntry.Image>() }
+    val journalText = remember { mutableStateOf("") }
+    val journalImages = remember { mutableListOf<Uri>() }
     val takingPicture = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -144,10 +143,10 @@ fun HabitRunning(
     }
 
     if (takingPicture.value) {
-        CameraView(onImageCaptured = { uri, time, fromGallery ->
-            Log.e("DBG", "uri: $uri, $time, $fromGallery")
+        CameraView(onImageCaptured = { uri, fromGallery ->
+            Log.e("DBG", "uri: $uri, $fromGallery")
             takingPicture.value = false
-            images.add(JournalEntry.Image(time, uri))
+            journalImages.add(uri)
         }, onError = { e ->
             Log.e("DBG", "err: $e")
         })
@@ -177,11 +176,11 @@ fun HabitRunning(
                 }
             )
             TextField(
-                value = journalEntry.value,
-                onValueChange = { journalEntry.value = it },
+                value = journalText.value,
+                onValueChange = { journalText.value = it },
                 label = { Text("Journal Entry") }
             )
-            if (images.isNotEmpty()) {
+            if (journalImages.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier.scrollable(
                         orientation = Orientation.Horizontal,
@@ -189,9 +188,9 @@ fun HabitRunning(
                         state = ScrollableState { it }
                     )
                 ) {
-                    items(images) {
+                    items(journalImages) {
                         Image(
-                            rememberImagePainter(it.uri),
+                            rememberImagePainter(it),
                             contentDescription = null,
                             modifier = Modifier.size(128.dp)
                         )
@@ -222,7 +221,7 @@ fun HabitRunning(
                 Text("Cancel")
             }
             Button(onClick = {
-                vm.done(habit, journalEntry.value)
+                vm.done(habit, journalText.value, journalImages)
             }) {
                 Text("Done")
             }

@@ -50,7 +50,7 @@ sealed class CameraUIAction {
 }
 
 @Composable
-fun CameraView(onImageCaptured: (Uri, String, Boolean) -> Unit, onError: (ImageCaptureException) -> Unit) {
+fun CameraView(onImageCaptured: (Uri, Boolean) -> Unit, onError: (ImageCaptureException) -> Unit) {
     val context = LocalContext.current
     var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
     val imageCapture: ImageCapture = remember {
@@ -59,7 +59,7 @@ fun CameraView(onImageCaptured: (Uri, String, Boolean) -> Unit, onError: (ImageC
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { onImageCaptured(it, "DONT CARE REMOVE ME", true) }
+        uri?.let { onImageCaptured(it, true) }
     }
 
     CameraPreviewView(
@@ -191,7 +191,7 @@ private const val PHOTO_EXTENSION = ".jpg"
 fun ImageCapture.takePicture(
     context: Context,
     lensFacing: Int,
-    onImageCaptured: (Uri, String, Boolean) -> Unit,
+    onImageCaptured: (Uri, Boolean) -> Unit,
     onError: (ImageCaptureException) -> Unit
 ) {
     val outputDirectory = context.getOutputDirectory()
@@ -217,7 +217,7 @@ fun ImageCapture.takePicture(
                 ) { _, uri ->
 
                 }
-                onImageCaptured(savedUri, time, false)
+                onImageCaptured(savedUri, false)
             }
 
             override fun onError(exception: ImageCaptureException) {

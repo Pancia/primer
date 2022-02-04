@@ -9,7 +9,12 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -176,12 +181,22 @@ fun HabitRunning(
                 onValueChange = { journalEntry.value = it },
                 label = { Text("Journal Entry") }
             )
-            images.forEach {
-                Image(
-                    rememberImagePainter(it.uri),
-                    contentDescription = null,
-                    modifier = Modifier.size(128.dp)
-                )
+            if (images.isNotEmpty()) {
+                LazyRow(
+                    modifier = Modifier.scrollable(
+                        orientation = Orientation.Horizontal,
+                        enabled = true,
+                        state = ScrollableState { it }
+                    )
+                ) {
+                    items(images) {
+                        Image(
+                            rememberImagePainter(it.uri),
+                            contentDescription = null,
+                            modifier = Modifier.size(128.dp)
+                        )
+                    }
+                }
             }
             Button(onClick = {
                 if (ContextCompat.checkSelfPermission(

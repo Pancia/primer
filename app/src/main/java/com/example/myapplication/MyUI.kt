@@ -23,7 +23,7 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
         }
         composable(NavRoute.HabitDetail.route) {
             val vm: HabitDetailViewModel =
-                viewModel(factory = HabitDetailViewModel.provideFactory(context))
+                viewModel(factory = HabitDetailViewModel.provideFactory(context, nav))
             val habitID = it.arguments?.getString("habitID")!!
             HabitDetail(vm, habitID)
         }

@@ -1,6 +1,8 @@
 package com.example.myapplication.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,14 +23,14 @@ fun HabitsList(vm: HabitsListViewModel) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Create a new Habit")
         }
     }, floatingActionButtonPosition = FabPosition.Center) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxHeight(1f)
                 .fillMaxWidth(1f),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            vm.habits.sortedBy { it.title }.forEach {
+            items(vm.habits.sortedBy { it.title }) {
                 Button(modifier = Modifier
                     .padding(10.dp)
                     .fillMaxWidth(1f),

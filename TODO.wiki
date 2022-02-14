@@ -1,4 +1,5 @@
 # TODOS
+- [ ] delete habit
 - [ ] pick an alarm sound
 - [ ] global log class, writes to file & alerts user on errors
 - [ ] rename application!

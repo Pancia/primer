@@ -21,19 +21,28 @@ private const val IMAGES_DIR = "images"
 private const val INFO_FILE = "info.json"
 
 class HabitStorage(private val context: Context) {
-    private val json = Klaxon().converter(uuidConverter)
-
     private fun rootDir() =
         File(context.externalMediaDirs.first(), APP_NAME)
+
+    private fun habitsDir() =
+        File(rootDir(), "habits")
+
+    private fun trashDir() =
+        File(rootDir(), "trash")
+
+    private fun storageFor(id: UUID) =
+        File(habitsDir(), "$id")
 
     private fun storageFor(id: UUID, f: String) =
         storageFor("$id", f)
 
     private fun storageFor(id: String, f: String) =
-        File(rootDir(), "$id/$f")
+        File(habitsDir(), "$id/$f")
+
+    private val json = Klaxon().converter(uuidConverter)
 
     fun getAllTitles(): List<Habit> =
-        rootDir().listFiles { f -> f.isDirectory }
+        habitsDir().listFiles { f -> f.isDirectory }
             ?.map { json.parse<Habit>(File(it, INFO_FILE))!! }
             ?: emptyList()
 
@@ -87,6 +96,13 @@ class HabitStorage(private val context: Context) {
         storageFor(habitID, IMAGES_DIR).apply { mkdirs() }
 
     fun deleteAll() {
-        rootDir().deleteRecursively()
+        habitsDir().deleteRecursively()
+    }
+
+    fun deleteHabit(habit: Habit) {
+        storageFor(habit.id).apply {
+            copyRecursively(trashDir(), overwrite = true)
+                    && deleteRecursively()
+        }
     }
 }

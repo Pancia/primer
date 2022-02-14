@@ -30,6 +30,7 @@ class Alarm() : BroadcastReceiver() {
             .setContentText("MY TEXT")
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pendingIntent)
+            .setSilent(true)
             .setOngoing(true) // user cannot dismiss
 
         val ns = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

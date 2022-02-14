@@ -6,8 +6,6 @@
 - [ ] reorder list of habits, keep track so dont need sort by name & ##.*
 - [ ] show loading circle when loading habits
 - [ ]
-- [ ] vibrate alarm
-- [ ] no notification sound
 - [ ] status notif if timer active
 - [ ] home screen text (for stuff like weekly/seasonal plan)
 - [ ] pick an alarm sound

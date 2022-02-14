@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.Ringtone
 import android.media.RingtoneManager
+import android.os.*
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.myapplication.ui.HabitStorage
@@ -62,6 +63,24 @@ class MyApplication : Application() {
 
     private var ringtone: Ringtone? = null
 
+    private fun vibrate(pattern: LongArray) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vib = applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vib.vibrate(
+                CombinedVibration.createParallel(
+                    VibrationEffect.createWaveform
+                        (pattern, 0)
+                )
+            )
+        } else {
+            val vib = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vib.vibrate(
+                VibrationEffect.createWaveform
+                    (pattern, 0)
+            )
+        }
+    }
+
     fun startAlarm() {
         ringtone = RingtoneManager.getRingtone(
             this,
@@ -70,10 +89,18 @@ class MyApplication : Application() {
         ringtone?.isLooping = true
         Log.e("DBG", "start: ringtone = $ringtone")
         ringtone?.play()
+        vibrate(longArrayOf(0, 400, 300, 400, 900))
     }
 
     fun stopAlarm() {
         Log.e("DBG", "stop: ringtone = $ringtone")
         ringtone?.stop()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vib = applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vib.cancel()
+        } else {
+            val vib = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vib.cancel()
+        }
     }
 }

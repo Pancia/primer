@@ -8,6 +8,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.beust.klaxon.*
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.utils.IOUtils
+import java.io.FileInputStream
 
 private val uuidConverter = object : Converter {
     override fun canConvert(cls: Class<*>) = cls == UUID::class.java
@@ -101,8 +105,36 @@ class HabitStorage(private val context: Context) {
 
     fun deleteHabit(habit: Habit) {
         storageFor(habit.id).apply {
-            copyRecursively(trashDir(), overwrite = true)
+            copyRecursively(target = trashDir(), overwrite = true)
                     && deleteRecursively()
         }
+    }
+
+    private fun exportsDir(): File =
+        File(rootDir(), "exports").apply { mkdirs() }
+
+    private fun addToZip(out: ZipArchiveOutputStream, f: File, name: String) {
+        out.apply {
+            val entry = createArchiveEntry(f, name)
+            putArchiveEntry(entry)
+            IOUtils.copy(FileInputStream(f), out)
+            out.closeArchiveEntry()
+        }
+    }
+
+    fun createZip(): File {
+        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
+        val outFile = File(exportsDir(), "exported-habits.${now}.zip")
+        val out = ZipArchiveOutputStream(outFile)
+        getAllTitles().forEach { habit ->
+            val info = storageFor(habit.id, INFO_FILE)
+            addToZip(out, info, "${habit.title}/info.json")
+            val entries = storageFor(habit.id, ENTRIES_DIR)
+            (entries.listFiles() ?: emptyArray<File>()).forEach { entry ->
+                addToZip(out, entry, "${habit.title}/entries/${entry.name}")
+            }
+        }
+        out.finish()
+        return outFile
     }
 }

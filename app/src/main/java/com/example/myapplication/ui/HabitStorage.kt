@@ -130,7 +130,7 @@ class HabitStorage(private val context: Context) {
 
     fun deleteHabit(habit: Habit) {
         storageFor(habit.id).apply {
-            copyRecursively(target = trashDir(), overwrite = true)
+            copyRecursively(target = File(trashDir(), habit.id.toString()).ensureExists(), overwrite = true)
                     && deleteRecursively()
         }
         val ordering = getHabitOrdering()
@@ -164,4 +164,9 @@ class HabitStorage(private val context: Context) {
         out.finish()
         return outFile
     }
+}
+
+private fun File.ensureExists(): File {
+    if (!exists()) createNewFile()
+    return this
 }

@@ -66,7 +66,7 @@ class RunningViewModel(
 
     private val storage = globals.storage
 
-    fun getHabitInfo(habitID: String): Habit =
+    fun getHabitInfo(habitID: String) =
         storage.getHabitInfoByID(habitID)
 
     fun editTitle(id: UUID, title: String) {
@@ -96,7 +96,7 @@ class RunningViewModel(
         timer.cancel()
         cancelAlarm(habit.id)
         saveJournalEntry(habit.id, text, images)
-        nav.navigate(NavRoute.PickHabit.create()) {
+        nav.navigate(NavRoute.ListOfHabits.create()) {
             popUpTo(NavRoute.Home.route)
         }
     }
@@ -104,7 +104,7 @@ class RunningViewModel(
     fun cancel(habit: Habit) {
         timer.cancel()
         cancelAlarm(habit.id)
-        nav.navigate(NavRoute.PickHabit.create()) {
+        nav.navigate(NavRoute.Home.create()) {
             popUpTo(NavRoute.Home.route)
         }
     }
@@ -145,7 +145,7 @@ fun HabitRunning(
     habitID: String,
     _duration: Int
 ) {
-    val habit = vm.getHabitInfo(habitID)
+    val habit = vm.getHabitInfo(habitID)!!
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
     val journalText = remember { mutableStateOf("") }

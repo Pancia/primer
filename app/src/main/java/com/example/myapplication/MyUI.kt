@@ -15,22 +15,21 @@ import com.example.myapplication.ui.*
 fun MyApp(nav: NavHostController, application: MyApplication) {
     val context = application as Context
     NavHost(navController = nav, startDestination = NavRoute.Home.create()) {
-        composable(NavRoute.Home.route) { Home(context, nav) }
+        composable(NavRoute.Home.route) {
+            val vm: HomeViewModel =
+                viewModel(factory = HomeViewModel.provideFactory(context, nav))
+            Home(vm, HomeTab.HOME)
+        }
         composable(NavRoute.ListOfHabits.route) {
-            val vm: HabitsListViewModel =
-                viewModel(factory = HabitsListViewModel.provideFactory(context, nav))
-            HabitsList(vm)
+            val vm: HomeViewModel =
+                viewModel(factory = HomeViewModel.provideFactory(context, nav))
+            Home(vm, HomeTab.HABITS)
         }
         composable(NavRoute.HabitDetail.route) {
             val vm: HabitDetailViewModel =
                 viewModel(factory = HabitDetailViewModel.provideFactory(context, nav))
             val habitID = it.arguments?.getString("habitID")!!
             HabitDetail(vm, habitID)
-        }
-        composable(NavRoute.PickHabit.route) {
-            val vm: HabitsListViewModel =
-                viewModel(factory = HabitsListViewModel.provideFactory(context, nav))
-            HabitPicker(vm)
         }
         composable(
             NavRoute.SetTimer.route,

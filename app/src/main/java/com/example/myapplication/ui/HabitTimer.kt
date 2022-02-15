@@ -38,7 +38,7 @@ class TimerViewModel(
     private val storage = (context as MyApplication).globals.storage
     private val globals = (context as MyApplication).globals
 
-    fun getHabitInfo(habitID: String): Habit =
+    fun getHabitInfo(habitID: String) =
         storage.getHabitInfoByID(habitID)
 
     fun start(time: Int) {
@@ -75,7 +75,7 @@ fun HabitTimer(
     vm: TimerViewModel,
     habitID: String
 ) {
-    val habit = vm.getHabitInfo(habitID)
+    val habit = vm.getHabitInfo(habitID)!!
     Column(
         modifier = Modifier
             .fillMaxHeight(1f)

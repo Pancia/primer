@@ -27,7 +27,7 @@ import java.util.*
 class HabitDetailViewModel(context: Context, private val nav: NavHostController) : ViewModel() {
     private val storage = (context as MyApplication).globals.storage
 
-    fun getHabitByID(habitID: String): Habit =
+    fun getHabitByID(habitID: String) =
         storage.getHabitByID(habitID)
 
     fun editTitle(id: UUID, title: String) {
@@ -39,8 +39,8 @@ class HabitDetailViewModel(context: Context, private val nav: NavHostController)
     }
 
     fun deleteHabit(habit: Habit) {
+        nav.navigate(NavRoute.ListOfHabits.create())
         storage.deleteHabit(habit)
-        nav.popBackStack()
     }
 
     companion object {
@@ -59,7 +59,7 @@ fun HabitDetail(
     vm: HabitDetailViewModel,
     habitID: String
 ) {
-    val habit = vm.getHabitByID(habitID)
+    val habit = vm.getHabitByID(habitID) ?: return
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
     Scaffold(topBar = {

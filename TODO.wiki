@@ -1,28 +1,23 @@
 # TODOS
-- [ ] add btm tabs to home page
-    - [ ] habits, can add and start
-    - [ ] plan text box, eg weekly plan
-- [ ] tasks, can be checked off in active page
-- [ ] reorder list of habits, keep track so dont need sort by name & ##.*
-- [ ] show loading circle when loading habits
-- [ ]
-- [ ] status notif if timer active
-- [ ] home screen text (for stuff like weekly/seasonal plan)
-- [ ] pick an alarm sound
+- [ ] BUG: if app closed, forgets active habit
+- [ ] BUG: last habit is obscured by bottomAppBar
+- [ ] settings page
+    - [ ] pick an alarm sound
 - [ ] change time pick to be standard numpad
+- [ ] tasks, can be checked off in active page
 - [ ] full screen alarm
 - [ ] global log class, writes to file & alerts user on errors
-- [ ] rename application!
+    - [ ] overflow menu item
 - [ ] get/display journal entries lazily, could be many, how?
+    - [ ] show loading circle when loading habits
+- [ ] ? status notif if timer active
 - [ ] ? page to view all entries chronologically
 - [ ] journal entry
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
+- [ ] rename application!
 - [ ] import from zip (downloaded to phone manually)
 
 # REFACTORINGS
 - [ ] pass globals to all viewmodels
 - [ ] refactor navigation actions into viewmodel
-
-# BUGS
-- [ ]

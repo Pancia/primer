@@ -8,7 +8,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.beust.klaxon.*
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
 import java.io.FileInputStream
@@ -23,16 +22,26 @@ private const val APP_NAME = "MyApplication"
 private const val ENTRIES_DIR = "entries"
 private const val IMAGES_DIR = "images"
 private const val INFO_FILE = "info.json"
+private const val HABITS_DIR = "habits"
+private const val TRASH_DIR = "trash"
+private const val GLOBAL_TEXT_FILE = "global-text.txt"
+private const val HABITS_ORDERING_FILE = "habits-ordering.txt"
 
 class HabitStorage(private val context: Context) {
     private fun rootDir() =
         File(context.externalMediaDirs.first(), APP_NAME)
 
     private fun habitsDir() =
-        File(rootDir(), "habits")
+        File(rootDir(), HABITS_DIR)
 
     private fun trashDir() =
-        File(rootDir(), "trash")
+        File(rootDir(), TRASH_DIR)
+
+    private fun globalTextFile() =
+        File(rootDir(), GLOBAL_TEXT_FILE).apply { createNewFile() }
+
+    private fun orderingFile() =
+        File(rootDir(), HABITS_ORDERING_FILE).apply { createNewFile() }
 
     private fun storageFor(id: UUID) =
         File(habitsDir(), "$id")
@@ -45,16 +54,24 @@ class HabitStorage(private val context: Context) {
 
     private val json = Klaxon().converter(uuidConverter)
 
+    private fun getHabitOrdering() =
+        orderingFile().readLines().map { UUID.fromString(it) }
+
+    fun saveHabitOrdering(ordering: List<UUID>) =
+        orderingFile().writeText(ordering.joinToString("\n"))
+
     fun getAllTitles(): List<Habit> =
-        habitsDir().listFiles { f -> f.isDirectory }
-            ?.map { json.parse<Habit>(File(it, INFO_FILE))!! }
-            ?: emptyList()
+        getHabitOrdering()
+            .map { json.parse<Habit>(storageFor(it, INFO_FILE))!! }
 
-    fun getHabitInfoByID(habitID: String): Habit =
-        json.parse(storageFor(habitID, INFO_FILE))!!
+    fun getHabitInfoByID(habitID: String): Habit? =
+        storageFor(habitID, INFO_FILE).let {
+            if (it.exists()) json.parse(it) else null
+        }
 
-    fun getHabitByID(habitID: String): Habit {
+    fun getHabitByID(habitID: String): Habit? {
         val habit = getHabitInfoByID(habitID)
+        if (habit == null) return habit
         habit.journalEntries =
             (storageFor(habit.id, ENTRIES_DIR)
                 .listFiles() ?: emptyArray<File>())
@@ -69,6 +86,8 @@ class HabitStorage(private val context: Context) {
         storageFor(habit.id, INFO_FILE)
             .apply { File(parent!!).mkdirs() }
             .writeText(json.toJsonString(habit))
+        val ordering = getHabitOrdering()
+        saveHabitOrdering(ordering.plus(habit.id))
         return habit
     }
 
@@ -99,6 +118,12 @@ class HabitStorage(private val context: Context) {
     fun getImageOutputDirectory(habitID: UUID): File =
         storageFor(habitID, IMAGES_DIR).apply { mkdirs() }
 
+    fun getGlobalText() =
+        globalTextFile().readText()
+
+    fun editGlobalText(text: String) =
+        globalTextFile().writeText(text)
+
     fun deleteAll() {
         habitsDir().deleteRecursively()
     }
@@ -108,6 +133,8 @@ class HabitStorage(private val context: Context) {
             copyRecursively(target = trashDir(), overwrite = true)
                     && deleteRecursively()
         }
+        val ordering = getHabitOrdering()
+        saveHabitOrdering(ordering.filterNot { it == habit.id })
     }
 
     private fun exportsDir(): File =

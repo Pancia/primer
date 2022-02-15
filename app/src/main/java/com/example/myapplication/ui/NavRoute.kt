@@ -15,10 +15,6 @@ sealed class NavRoute(val route: String) {
         fun create(habitID: UUID) = "habit/$habitID"
     }
 
-    object PickHabit : NavRoute("habit-picker") {
-        fun create() = this.route
-    }
-
     object SetTimer : NavRoute("set-timer/{habitID}?duration={duration}") {
         fun create(habitID: UUID, duration: Int? = null) =
             "set-timer/$habitID${if (duration != null) "?duration=$duration" else ""}"

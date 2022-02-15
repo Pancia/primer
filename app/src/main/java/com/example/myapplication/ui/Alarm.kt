@@ -15,7 +15,7 @@ import java.util.*
 class Alarm() : BroadcastReceiver() {
     override fun onReceive(context: Context, i: Intent) {
         val habitID = i.getStringExtra("habitID")!!
-        val habit = HabitStorage(context).getHabitInfoByID(habitID)
+        val habit = HabitStorage(context).getHabitInfoByID(habitID) ?: return
         Toast.makeText(context, "ALARM RECEIVED: ${habit.title}", Toast.LENGTH_LONG).show()
 
         val intent = Intent(context, MainActivity::class.java).apply {

@@ -64,12 +64,13 @@ class HabitsListViewModel(
 }
 
 @Composable
-fun HabitsTab(vm: HabitsListViewModel) {
+fun HabitsTab(vm: HabitsListViewModel, padding: PaddingValues) {
     vm.refresh()
     val state = rememberReorderState()
     LazyColumn(
         state = state.listState,
         modifier = Modifier
+            .padding(padding)
             .fillMaxHeight(1f)
             .fillMaxWidth(1f)
             .reorderable(state, onMove = vm::moveHabit, onDragEnd = vm::saveOrdering),

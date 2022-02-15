@@ -1,6 +1,5 @@
 # TODOS
 - [ ] checklist in running habit page
-- [ ] BUG: last habit is obscured by bottomAppBar
 - [ ] settings page
     - [ ] pick an alarm sound
 - [ ] change time pick to be standard numpad

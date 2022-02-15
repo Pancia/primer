@@ -3,10 +3,7 @@ package com.example.myapplication.ui
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -66,7 +63,6 @@ class HomeViewModel(val context: Context, val nav: NavHostController) : ViewMode
     fun getHabitInfoByID(s: String) = globals.storage.getHabitInfoByID(s)
     fun navToNewHabit() {
         val habit = globals.storage.create("TempTitle")
-        //habits.add(habit)
         nav.navigate(NavRoute.HabitDetail.create(habit.id))
     }
 
@@ -85,9 +81,10 @@ class HomeViewModel(val context: Context, val nav: NavHostController) : ViewMode
 }
 
 @Composable
-fun HomeTab(vm: HomeViewModel) {
+fun HomeTab(vm: HomeViewModel, padding: PaddingValues) {
     Column(
         modifier = Modifier
+            .padding(padding)
             .fillMaxHeight(1f)
             .fillMaxWidth(1f),
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -106,7 +103,6 @@ fun HomeTab(vm: HomeViewModel) {
         TextField(
             value = globalText.value,
             onValueChange = { globalText.value = it },
-            //label = { Text("Title") },
             textStyle = MaterialTheme.typography.h5,
             modifier = Modifier
                 .onFocusChanged {
@@ -151,11 +147,11 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
         }
     ) {
         when (tab) {
-            HomeTab.HOME -> HomeTab(vm)
+            HomeTab.HOME -> HomeTab(vm, it)
             HomeTab.HABITS -> {
                 val newVM: HabitsListViewModel =
                     viewModel(factory = HabitsListViewModel.provideFactory(vm.context, vm.nav))
-                HabitsTab(newVM)
+                HabitsTab(newVM, it)
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.Manifest
 import android.app.NotificationManager
@@ -33,8 +33,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
-import com.example.myapplication.Habit
-import com.example.myapplication.MyApplication
+import com.dayzerostudio.primer.Habit
+import com.dayzerostudio.primer.MyApplication
 import java.io.File
 import java.util.*
 

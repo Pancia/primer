@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.dayzerostudio.primer
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -9,8 +9,8 @@ import android.media.RingtoneManager
 import android.os.*
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import com.example.myapplication.ui.HabitStorage
-import com.example.myapplication.ui.myNotifChID
+import com.dayzerostudio.primer.ui.HabitStorage
+import com.dayzerostudio.primer.ui.myNotifChID
 import java.lang.Long.max
 import kotlin.math.ceil
 import java.util.*

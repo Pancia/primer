@@ -1,13 +1,14 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.content.Context
-import com.example.myapplication.Habit
-import com.example.myapplication.JournalEntry
+import com.dayzerostudio.primer.Habit
+import com.dayzerostudio.primer.JournalEntry
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.beust.klaxon.*
+import com.dayzerostudio.primer.R
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
 import java.io.FileInputStream
@@ -18,7 +19,6 @@ private val uuidConverter = object : Converter {
     override fun fromJson(jv: JsonValue) = UUID.fromString(jv.objString("uuid"))
 }
 
-private const val APP_NAME = "MyApplication"
 private const val ENTRIES_DIR = "entries"
 private const val IMAGES_DIR = "images"
 private const val INFO_FILE = "info.json"
@@ -28,8 +28,10 @@ private const val GLOBAL_TEXT_FILE = "global-text.txt"
 private const val HABITS_ORDERING_FILE = "habits-ordering.txt"
 
 class HabitStorage(private val context: Context) {
+    private val appName = context.getString(R.string.app_name)
+
     private fun rootDir() =
-        File(context.externalMediaDirs.first(), APP_NAME)
+        File(context.externalMediaDirs.first(), appName)
 
     private fun habitsDir() =
         File(rootDir(), HABITS_DIR)
@@ -153,12 +155,18 @@ class HabitStorage(private val context: Context) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
         val outFile = File(exportsDir(), "exported-habits.${now}.zip")
         val out = ZipArchiveOutputStream(outFile)
+        addToZip(out, globalTextFile(), GLOBAL_TEXT_FILE)
+        addToZip(out, orderingFile(), HABITS_ORDERING_FILE)
         getAllTitles().forEach { habit ->
             val info = storageFor(habit.id, INFO_FILE)
             addToZip(out, info, "${habit.title}/info.json")
             val entries = storageFor(habit.id, ENTRIES_DIR)
-            (entries.listFiles() ?: emptyArray<File>()).forEach { entry ->
+            (entries.listFiles() ?: emptyArray()).forEach { entry ->
                 addToZip(out, entry, "${habit.title}/entries/${entry.name}")
+            }
+            val images = storageFor(habit.id, IMAGES_DIR)
+            (images.listFiles() ?: emptyArray()).forEach { image ->
+                addToZip(out, image, "${habit.title}/images/${image.name}")
             }
         }
         out.finish()

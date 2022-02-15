@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.app.AlarmManager
 import android.app.NotificationManager
@@ -8,9 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import com.example.myapplication.MainActivity
-import com.example.myapplication.MyApplication
-import java.util.*
+import com.dayzerostudio.primer.MainActivity
+import com.dayzerostudio.primer.MyApplication
 
 class Alarm() : BroadcastReceiver() {
     override fun onReceive(context: Context, i: Intent) {

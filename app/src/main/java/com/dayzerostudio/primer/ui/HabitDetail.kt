@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.content.Context
 import android.net.Uri
@@ -20,8 +20,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
-import com.example.myapplication.Habit
-import com.example.myapplication.MyApplication
+import com.dayzerostudio.primer.Habit
+import com.dayzerostudio.primer.MyApplication
 import java.util.*
 
 class HabitDetailViewModel(context: Context, private val nav: NavHostController) : ViewModel() {
@@ -63,7 +63,8 @@ fun HabitDetail(
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
     Scaffold(topBar = {
-        TopAppBar() {
+        TopAppBar {
+            Text(habit.id.toString().take(8))
             Row(modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = { vm.deleteHabit(habit) }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Habit")

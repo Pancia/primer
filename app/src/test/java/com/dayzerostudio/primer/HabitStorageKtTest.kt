@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.dayzerostudio.primer
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import java.util.*
 

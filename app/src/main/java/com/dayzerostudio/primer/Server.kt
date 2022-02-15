@@ -1,12 +1,10 @@
-package com.example.myapplication
+package com.dayzerostudio.primer
 
-import android.widget.Toast
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import java.io.File
-import java.net.ConnectException
 
 fun sendZipToServer(zip: File) {
     val client = OkHttpClient()

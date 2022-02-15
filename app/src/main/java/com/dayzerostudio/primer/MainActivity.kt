@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.dayzerostudio.primer
 
 import android.app.NotificationManager
 import android.content.Context
@@ -8,7 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.dayzerostudio.primer.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     lateinit var nav: NavHostController

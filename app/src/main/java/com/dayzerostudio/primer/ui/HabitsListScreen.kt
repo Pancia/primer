@@ -1,7 +1,6 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
-import com.example.myapplication.Habit
-import com.example.myapplication.MyApplication
+import com.dayzerostudio.primer.Habit
+import com.dayzerostudio.primer.MyApplication
 import org.burnoutcrew.reorderable.*
 
 class HabitsListViewModel(

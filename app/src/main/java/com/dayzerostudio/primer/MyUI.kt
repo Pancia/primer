@@ -1,15 +1,13 @@
-package com.example.myapplication
+package com.dayzerostudio.primer
 
 import android.content.Context
-import androidx.compose.material.FabPosition
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.myapplication.ui.*
+import com.dayzerostudio.primer.MyApplication
+import com.dayzerostudio.primer.ui.*
 
 @Composable
 fun MyApp(nav: NavHostController, application: MyApplication) {

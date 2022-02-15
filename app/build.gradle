@@ -7,7 +7,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.example.myapplication"
+        applicationId "com.dayzerostudio.primer"
         minSdk 29
         targetSdk 32
         versionCode 1

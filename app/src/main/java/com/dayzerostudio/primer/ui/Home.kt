@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.dayzerostudio.primer.ui
 
 import android.content.Context
 import android.util.Log
@@ -11,12 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.myapplication.MyApplication
-import com.example.myapplication.sendZipToServer
+import com.dayzerostudio.primer.MyApplication
+import com.dayzerostudio.primer.R
+import com.dayzerostudio.primer.sendZipToServer
 import java.net.ConnectException
 import kotlin.concurrent.thread
 
@@ -119,7 +121,7 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
     var showOverflow by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("MyApp") }, actions = {
+            TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
                 IconButton(onClick = { showOverflow = !showOverflow }) {
                     Icon(Icons.Default.MoreVert, "More")
                 }

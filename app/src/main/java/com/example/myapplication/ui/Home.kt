@@ -1,6 +1,8 @@
 package com.example.myapplication.ui
 
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.myapplication.MyApplication
 import com.example.myapplication.sendZipToServer
+import java.net.ConnectException
 import kotlin.concurrent.thread
 
 enum class HomeTab {
@@ -28,11 +31,18 @@ enum class HomeTab {
 class HomeViewModel(val context: Context, val nav: NavHostController) : ViewModel() {
     private val globals = (context as MyApplication).globals
 
-    fun exportHabits() =
+    fun exportHabits() {
+        val toast = Toast.makeText(context, "Failed to connect to server", Toast.LENGTH_LONG)
         thread {
             val z = globals.storage.createZip()
-            sendZipToServer(z)
+            try {
+                sendZipToServer(z)
+            } catch (e: ConnectException) {
+                Log.e("export-habits", "Failed to export habits!", e)
+                toast.show()
+            }
         }
+    }
 
     fun gotoHabits() {
         nav.navigate(NavRoute.ListOfHabits.create())

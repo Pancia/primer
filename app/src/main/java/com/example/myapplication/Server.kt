@@ -1,10 +1,12 @@
 package com.example.myapplication
 
+import android.widget.Toast
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import java.io.File
+import java.net.ConnectException
 
 fun sendZipToServer(zip: File) {
     val client = OkHttpClient()
@@ -13,7 +15,7 @@ fun sendZipToServer(zip: File) {
         .url("http://192.168.1.42:7777/habits-sync?name=${zip.name}")
         .post(body)
         .build()
-    client.newCall(request).execute().use { response ->
-        response.body()!!.string()
-    }
+        client.newCall(request).execute().use { response ->
+            response.body()!!.string()
+        }
 }

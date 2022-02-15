@@ -1,10 +1,10 @@
 # TODOS
+- [ ] checklist in running habit page
 - [ ] BUG: if app closed, forgets active habit
 - [ ] BUG: last habit is obscured by bottomAppBar
 - [ ] settings page
     - [ ] pick an alarm sound
 - [ ] change time pick to be standard numpad
-- [ ] tasks, can be checked off in active page
 - [ ] full screen alarm
 - [ ] global log class, writes to file & alerts user on errors
     - [ ] overflow menu item

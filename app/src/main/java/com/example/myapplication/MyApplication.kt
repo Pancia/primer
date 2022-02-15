@@ -11,34 +11,41 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.example.myapplication.ui.HabitStorage
 import com.example.myapplication.ui.myNotifChID
+import java.lang.Long.max
 import kotlin.math.ceil
 import java.util.*
 
-class HabitTimeKeeper() {
-    val activeHabitID = mutableStateOf<UUID?>(null)
-    private val triggerTime = mutableStateOf<Long?>(null)
+private const val ACTIVE_HABIT_ID_KEY = "activeHabitID"
+private const val TRIGGER_TIME_KEY = "triggerTime"
+
+class HabitTimeKeeper(context: Context) {
+    private val sp = context.getSharedPreferences(this::class.java.name, Context.MODE_PRIVATE)
+
+    val activeHabitID = mutableStateOf(sp.getString(ACTIVE_HABIT_ID_KEY, null)?.let { UUID.fromString(it) })
+    private val triggerTime = mutableStateOf(sp.getLong(TRIGGER_TIME_KEY, -1L))
 
     fun init(habitID: String, time: Int) {
         activeHabitID.value = UUID.fromString(habitID)
+        sp.edit().putString(ACTIVE_HABIT_ID_KEY, habitID).apply()
         triggerTime.value = System.currentTimeMillis() + time * 60 * 1000
+        sp.edit().putLong(TRIGGER_TIME_KEY, triggerTime.value).apply()
     }
 
     fun clear() {
         activeHabitID.value = null
-        triggerTime.value = null
+        triggerTime.value = -1L
+        sp.edit().remove(ACTIVE_HABIT_ID_KEY).remove(TRIGGER_TIME_KEY).apply()
     }
 
     fun timeLeft(): Int {
-        val millisLeft = (triggerTime.value?.let {
-            it - System.currentTimeMillis()
-        } ?: 0)
+        val millisLeft = max(0L, triggerTime.value - System.currentTimeMillis())
         return ceil(millisLeft / 60 / 1000.0).toInt()
     }
 }
 
 class Globals(context: Context) {
     val storage = HabitStorage(context)
-    val timeKeeper = HabitTimeKeeper()
+    val timeKeeper = HabitTimeKeeper(context)
 }
 
 class MyApplication : Application() {
@@ -65,7 +72,8 @@ class MyApplication : Application() {
 
     private fun vibrate(pattern: LongArray) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vib = applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            val vib =
+                applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vib.vibrate(
                 CombinedVibration.createParallel(
                     VibrationEffect.createWaveform
@@ -96,7 +104,8 @@ class MyApplication : Application() {
         Log.e("DBG", "stop: ringtone = $ringtone")
         ringtone?.stop()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vib = applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            val vib =
+                applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vib.cancel()
         } else {
             val vib = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator

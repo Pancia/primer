@@ -1,6 +1,5 @@
 # TODOS
 - [ ] checklist in running habit page
-- [ ] BUG: if app closed, forgets active habit
 - [ ] BUG: last habit is obscured by bottomAppBar
 - [ ] settings page
     - [ ] pick an alarm sound

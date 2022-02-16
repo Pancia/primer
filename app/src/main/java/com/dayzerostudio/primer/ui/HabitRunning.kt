@@ -20,10 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -33,6 +30,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
+import com.dayzerostudio.primer.ChecklistItem
 import com.dayzerostudio.primer.Habit
 import com.dayzerostudio.primer.MyApplication
 import java.io.File
@@ -80,8 +78,13 @@ class RunningViewModel(
     fun getImageOutputDirectory(habitID: UUID): File =
         storage.getImageOutputDirectory(habitID)
 
-    private fun saveJournalEntry(id: UUID, entry: String, images: List<String>) {
-        storage.addJournalEntry(id, entry, images)
+    private fun saveJournalEntry(
+        id: UUID,
+        entry: String,
+        images: List<String>,
+        checklist: List<ChecklistItem>
+    ) {
+        storage.addJournalEntry(id, entry, images, checklist)
     }
 
     private fun cancelAlarm(habitID: UUID) {
@@ -92,10 +95,15 @@ class RunningViewModel(
             .cancel(0)
     }
 
-    fun done(habit: Habit, text: String, images: MutableList<String>) {
+    fun done(
+        habit: Habit,
+        text: String,
+        images: List<String>,
+        checklist: List<ChecklistItem>
+    ) {
         timer.cancel()
         cancelAlarm(habit.id)
-        saveJournalEntry(habit.id, text, images)
+        saveJournalEntry(habit.id, text, images, checklist)
         nav.navigate(NavRoute.ListOfHabits.create()) {
             popUpTo(NavRoute.Home.route)
         }
@@ -148,6 +156,7 @@ fun HabitRunning(
     val habit = vm.getHabitInfo(habitID)!!
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
+    val checklist = habit.checklist.toMutableStateList()
     val journalText = remember { mutableStateOf("") }
     val journalImages = remember { mutableListOf<String>() }
     val takingPicture = remember { mutableStateOf(false) }
@@ -183,13 +192,13 @@ fun HabitRunning(
                     Icon(Icons.Default.Clear, "Cancel")
                 }
                 IconButton(onClick = {
-                    vm.done(habit, journalText.value, journalImages)
+                    vm.done(habit, journalText.value, journalImages, checklist)
                 }, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.Done, "Done")
                 }
             }
         }, topBar = {
-            TopAppBar() {
+            TopAppBar {
                 TextField(
                     value = title.value,
                     onValueChange = { title.value = it },
@@ -226,11 +235,19 @@ fun HabitRunning(
                             label = { Text("Description") },
                             textStyle = MaterialTheme.typography.h5,
                             modifier = Modifier
+                                .fillMaxWidth(1f)
                                 .onFocusChanged {
                                     vm.editDescription(habit.id, description.value)
                                 }
-                                .fillMaxWidth(1f)
                         )
+                    }
+                    items(checklist, key = { it.id }) { item ->
+                        Row {
+                            Checkbox(item.isChecked, onCheckedChange = {
+                                checklist[checklist.indexOf(item)] = item.copy(isChecked = it)
+                            })
+                            Text(item.text, style = MaterialTheme.typography.h5)
+                        }
                     }
                     item {
                         TextField(

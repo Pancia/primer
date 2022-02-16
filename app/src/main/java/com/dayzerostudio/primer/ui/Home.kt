@@ -143,7 +143,7 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
                     Icon(Icons.Default.List, "View Habits")
                 }
                 IconButton(onClick = { vm.navToNewHabit() }, modifier = Modifier.weight(1f)) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Create a new Habit")
+                    Icon(Icons.Default.Add, "Create a new Habit")
                 }
             }
         }

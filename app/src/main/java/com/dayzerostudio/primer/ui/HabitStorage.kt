@@ -1,6 +1,7 @@
 package com.dayzerostudio.primer.ui
 
 import android.content.Context
+import android.util.Log
 import com.dayzerostudio.primer.Habit
 import com.dayzerostudio.primer.JournalEntry
 import java.io.File
@@ -8,6 +9,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.beust.klaxon.*
+import com.dayzerostudio.primer.ChecklistItem
 import com.dayzerostudio.primer.R
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
@@ -21,9 +23,10 @@ private val uuidConverter = object : Converter {
 
 private const val ENTRIES_DIR = "entries"
 private const val IMAGES_DIR = "images"
-private const val INFO_FILE = "info.json"
 private const val HABITS_DIR = "habits"
 private const val TRASH_DIR = "trash"
+private const val INFO_FILE = "info.json"
+private const val CHECKLIST_FILE = "checklist.json"
 private const val GLOBAL_TEXT_FILE = "global-text.txt"
 private const val HABITS_ORDERING_FILE = "habits-ordering.txt"
 
@@ -40,10 +43,10 @@ class HabitStorage(private val context: Context) {
         File(rootDir(), TRASH_DIR)
 
     private fun globalTextFile() =
-        File(rootDir(), GLOBAL_TEXT_FILE).apply { createNewFile() }
+        File(rootDir(), GLOBAL_TEXT_FILE).ensureExists()
 
     private fun orderingFile() =
-        File(rootDir(), HABITS_ORDERING_FILE).apply { createNewFile() }
+        File(rootDir(), HABITS_ORDERING_FILE).ensureExists()
 
     private fun storageFor(id: UUID) =
         File(habitsDir(), "$id")
@@ -68,8 +71,16 @@ class HabitStorage(private val context: Context) {
 
     fun getHabitInfoByID(habitID: String): Habit? =
         storageFor(habitID, INFO_FILE).let {
-            if (it.exists()) json.parse(it) else null
+            if (it.exists()) json.parse<Habit>(it)?.apply {
+                checklist = checklistFor(id)
+            } else null
         }
+
+    fun checklistFor(habitID: UUID): List<ChecklistItem> {
+        val file = storageFor(habitID, CHECKLIST_FILE).ensureExists()
+        return if (file.readText().isBlank()) emptyList()
+        else json.parseArray(file)!!
+    }
 
     fun getHabitByID(habitID: String): Habit? {
         val habit = getHabitInfoByID(habitID)
@@ -80,6 +91,8 @@ class HabitStorage(private val context: Context) {
                 .map { json.parse<JournalEntry>(it)!! }
                 .sortedBy { it.at }
                 .reversed()
+        habit.checklist =
+            checklistFor(habit.id)
         return habit
     }
 
@@ -107,11 +120,39 @@ class HabitStorage(private val context: Context) {
         info.writeText(json.toJsonString(habit))
     }
 
-    fun addJournalEntry(id: UUID, text: String, images: List<String>) {
+    fun saveChecklist(habit: Habit, checklist: List<ChecklistItem>) {
+        val file = storageFor(habit.id, CHECKLIST_FILE)
+        file.writeText(json.toJsonString(checklist))
+    }
+
+    fun addNewChecklistItem(habit: Habit): ChecklistItem {
+        val item = ChecklistItem("temp")
+        val checklist = checklistFor(habit.id)
+        saveChecklist(habit, checklist.plus(item))
+        return item
+    }
+
+    fun editChecklistItemText(habit: Habit, id: UUID, text: String) {
+        saveChecklist(habit, checklistFor(habit.id).map {
+            if (it.id == id) it.text = text; it
+        })
+    }
+
+    fun deleteChecklistItem(habit: Habit, id: UUID) {
+        val checklist = checklistFor(habit.id)
+        saveChecklist(habit, checklist.filterNot { it.id == id })
+    }
+
+    fun addJournalEntry(
+        id: UUID,
+        text: String,
+        images: List<String>,
+        checklist: List<ChecklistItem>
+    ) {
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
         storageFor(id, "$ENTRIES_DIR/$now.json").apply {
             File(parent!!).mkdirs()
-            val entry = JournalEntry(now, text, images)
+            val entry = JournalEntry(now, text, images, checklist)
             val json = json.toJsonString(entry)
             writeText(json)
         }
@@ -132,7 +173,10 @@ class HabitStorage(private val context: Context) {
 
     fun deleteHabit(habit: Habit) {
         storageFor(habit.id).apply {
-            copyRecursively(target = File(trashDir(), habit.id.toString()).ensureExists(), overwrite = true)
+            copyRecursively(
+                target = File(trashDir(), habit.id.toString()).ensureExists(),
+                overwrite = true
+            )
                     && deleteRecursively()
         }
         val ordering = getHabitOrdering()
@@ -159,7 +203,9 @@ class HabitStorage(private val context: Context) {
         addToZip(out, orderingFile(), HABITS_ORDERING_FILE)
         getAllTitles().forEach { habit ->
             val info = storageFor(habit.id, INFO_FILE)
-            addToZip(out, info, "${habit.title}/info.json")
+            addToZip(out, info, "${habit.title}/$INFO_FILE")
+            val checklist = storageFor(habit.id, CHECKLIST_FILE)
+            addToZip(out, checklist, "${habit.title}/$CHECKLIST_FILE")
             val entries = storageFor(habit.id, ENTRIES_DIR)
             (entries.listFiles() ?: emptyArray()).forEach { entry ->
                 addToZip(out, entry, "${habit.title}/entries/${entry.name}")

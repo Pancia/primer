@@ -1,18 +1,27 @@
 # TODOS
-- [ ] checklist in running habit page
+- [X] checklist
+    - [X] detail should have btm tabs for info, checklist, journal entries
+    - [X] in entry store text as well (text could be changed in the future)
+    - [X] is reorderable
+    - [X] can delete
+    - [X] can tick in running page
+    - [X] can view in detail journalentries
 - [ ] get/display journal entries async & lazily, could be many, how?
     - [ ] show loading circle when loading habits
 - [ ] settings page
     - [ ] pick an alarm sound
 - [ ] change time pick to be standard numpad
 - [ ] full screen alarm
+- [ ] daily alarms
+    - [ ] only active if a habit was started in the day
+    - [ ] displayed in a home page tab
 - [ ] global log class, writes to file & alerts user on errors
     - [ ] overflow menu item
 - [ ] ? status notif if timer active
 - [ ] ? page to view all entries chronologically
 - [ ] journal entry
     - [ ] make sure is saved between app restarts
-    - [ ] journal entry scrolling should scroll description
+    - [ ] should always have a header with timestamp
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
 - [ ] rename application!

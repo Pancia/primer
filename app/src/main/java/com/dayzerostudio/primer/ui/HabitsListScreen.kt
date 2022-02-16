@@ -76,7 +76,7 @@ fun HabitsTab(vm: HabitsListViewModel, padding: PaddingValues) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        items(vm.habits) {
+        items(vm.habits, key = { it.id }) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(1f)

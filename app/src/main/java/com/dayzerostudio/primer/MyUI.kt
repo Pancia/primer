@@ -33,20 +33,14 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
             NavRoute.SetTimer.route,
             arguments = listOf(
                 navArgument("habitID") { type = NavType.StringType },
-                navArgument("duration") { type = NavType.IntType; defaultValue = 0 },
+                navArgument("duration") { type = NavType.StringType; defaultValue = "" },
             )
         ) {
             val habitID = it.arguments?.getString("habitID")!!
-            val duration = it.arguments?.getInt("duration")
+            val duration = it.arguments?.getString("duration")
             val vm: TimerViewModel =
-                viewModel(
-                    factory = TimerViewModel.provideFactory(
-                        context,
-                        nav,
-                        habitID,
-                        duration
-                    )
-                )
+                viewModel(factory = TimerViewModel.provideFactory(context, nav))
+            vm.init(habitID, duration)
             HabitTimer(vm, habitID)
         }
         composable(

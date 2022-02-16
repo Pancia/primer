@@ -2,36 +2,37 @@ package com.dayzerostudio.primer.ui
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.dayzerostudio.primer.MyApplication
 import java.util.*
 
+typealias Minutes = Int
+
 const val myNotifChID = "MY_CHANNEL"
 
 class TimerViewModel(
     private val context: Context,
-    private val nav: NavHostController,
-    private val habitID: String,
-    initialDuration: Int?
+    private val nav: NavHostController
 ) : ViewModel() {
-    val isAddition = mutableStateOf(true)
-    fun toggleAddition() {
-        isAddition.value = !isAddition.value
-    }
+    private lateinit var habitID: String
+    lateinit var time: MutableState<String>
 
-    val time = mutableStateOf(initialDuration ?: 0) // in minutes
-    fun addTime(i: Int) {
-        time.value = time.value + if (isAddition.value) i else -i
+    fun init(habitID: String, duration: String?) {
+        this.habitID = habitID
+        this.time = mutableStateOf(duration ?: "")
     }
 
     private val storage = (context as MyApplication).globals.storage
@@ -40,10 +41,29 @@ class TimerViewModel(
     fun getHabitInfo(habitID: String) =
         storage.getHabitInfoByID(habitID)
 
-    fun start(time: Int) {
-        globals.timeKeeper.init(habitID, time)
-        Alarm.startAlarm(context, habitID, time)
-        nav.navigate(NavRoute.HabitRunning.create(UUID.fromString(habitID), time)) {
+    fun addDigit(i: Int) {
+        if (time.value.length < 4) {
+            time.value = time.value + "$i"
+        }
+    }
+
+    fun timeBackspace() {
+        if (time.value.isNotEmpty()) {
+            time.value = time.value.dropLast(1)
+        }
+    }
+
+    fun clearTime() {
+        time.value = ""
+    }
+
+    fun start() {
+        if (time.value.isBlank()) return
+        val (hours, minutes) = time.value.padStart(4, '0').chunked(2).map { it.toInt() }
+        val duration: Minutes = hours * 60 + minutes
+        globals.timeKeeper.init(habitID, duration)
+        Alarm.startAlarm(context, habitID, duration)
+        nav.navigate(NavRoute.HabitRunning.create(UUID.fromString(habitID), duration)) {
             popUpTo(NavRoute.Home.route)
         }
     }
@@ -51,13 +71,11 @@ class TimerViewModel(
     companion object {
         fun provideFactory(
             context: Context,
-            nav: NavHostController,
-            habitID: String,
-            initialDuration: Int?
+            nav: NavHostController
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return TimerViewModel(context, nav, habitID, initialDuration) as T
+                return TimerViewModel(context, nav) as T
             }
         }
     }
@@ -65,7 +83,7 @@ class TimerViewModel(
 
 @Composable
 fun TimeButton(vm: TimerViewModel, time: Int) =
-    Button(onClick = { vm.addTime(time) }) {
+    Button(onClick = { vm.addDigit(time) }) {
         Text("$time")
     }
 
@@ -82,29 +100,49 @@ fun HabitTimer(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(habit.title, style = MaterialTheme.typography.h4)
-        Text("${vm.time.value} minutes", style = MaterialTheme.typography.h4)
-        Row {
-            Switch(checked = vm.isAddition.value, onCheckedChange = { vm.toggleAddition() })
-            Text(if (vm.isAddition.value) "Add" else "Sub", style = MaterialTheme.typography.h5)
-        }
+        Text(habit.title, style = MaterialTheme.typography.h5)
+        val (hours, minutes) = vm.time.value.padStart(4, '0').chunked(2)
+        Text("${hours}h ${minutes}m", style = MaterialTheme.typography.h3)
         Row(
             modifier = Modifier.fillMaxWidth(1f),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             TimeButton(vm, 1)
-            TimeButton(vm, 5)
-            TimeButton(vm, 15)
+            TimeButton(vm, 2)
+            TimeButton(vm, 3)
         }
         Row(
             modifier = Modifier.fillMaxWidth(1f),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TimeButton(vm, 30)
-            TimeButton(vm, 60)
+            TimeButton(vm, 4)
+            TimeButton(vm, 5)
+            TimeButton(vm, 6)
         }
-        Button(onClick = { vm.start(vm.time.value) }) {
-            Text(text = "Start")
+        Row(
+            modifier = Modifier.fillMaxWidth(1f),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TimeButton(vm, 7)
+            TimeButton(vm, 8)
+            TimeButton(vm, 9)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(1f),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            IconButton({ vm.clearTime() }) {
+                Icon(Icons.Default.Delete, "Clear")
+            }
+            TimeButton(vm, 0)
+            IconButton({ vm.timeBackspace() }) {
+                Icon(Icons.Default.ArrowBack, "backspace")
+            }
+        }
+        IconButton(onClick = { vm.start() }) {
+            if (vm.time.value.isNotBlank()) {
+                Icon(Icons.Filled.PlayArrow, "Start")
+            }
         }
     }
 }

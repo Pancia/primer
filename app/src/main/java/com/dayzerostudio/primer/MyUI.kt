@@ -15,17 +15,17 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
     NavHost(navController = nav, startDestination = NavRoute.Home.create()) {
         composable(NavRoute.Home.route) {
             val vm: HomeViewModel =
-                viewModel(factory = HomeViewModel.provideFactory(context, nav))
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
             Home(vm, HomeTab.HOME)
         }
         composable(NavRoute.ListOfHabits.route) {
             val vm: HomeViewModel =
-                viewModel(factory = HomeViewModel.provideFactory(context, nav))
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
             Home(vm, HomeTab.HABITS)
         }
         composable(NavRoute.HabitDetail.route) {
             val vm: HabitDetailViewModel =
-                viewModel(factory = HabitDetailViewModel.provideFactory(context, nav))
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
             val habitID = it.arguments?.getString("habitID")!!
             HabitDetail(vm, habitID)
         }
@@ -39,7 +39,7 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
             val habitID = it.arguments?.getString("habitID")!!
             val duration = it.arguments?.getString("duration")
             val vm: TimerViewModel =
-                viewModel(factory = TimerViewModel.provideFactory(context, nav))
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
             vm.init(habitID, duration)
             HabitTimer(vm, habitID)
         }
@@ -53,7 +53,7 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
             val habitID = it.arguments?.getString("habitID")!!
             val duration = it.arguments?.getInt("duration")!!
             val vm: RunningViewModel =
-                viewModel(factory = RunningViewModel.provideFactory(context, nav))
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
             vm.startCountdown(duration)
             HabitRunning(vm, habitID, duration)
         }

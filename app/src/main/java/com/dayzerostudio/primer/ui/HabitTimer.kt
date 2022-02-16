@@ -67,18 +67,6 @@ class TimerViewModel(
             popUpTo(NavRoute.Home.route)
         }
     }
-
-    companion object {
-        fun provideFactory(
-            context: Context,
-            nav: NavHostController
-        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return TimerViewModel(context, nav) as T
-            }
-        }
-    }
 }
 
 @Composable

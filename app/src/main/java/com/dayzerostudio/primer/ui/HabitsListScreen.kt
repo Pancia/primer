@@ -50,16 +50,6 @@ class HabitsListViewModel(
     fun saveOrdering(_from: Int, _to: Int) {
         storage.saveHabitOrdering(habits.map { it.id })
     }
-
-    companion object {
-        fun provideFactory(context: Context, nav: NavHostController):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return HabitsListViewModel(context, nav) as T
-            }
-        }
-    }
 }
 
 @Composable

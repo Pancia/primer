@@ -30,7 +30,7 @@ enum class DetailTab {
     INFO, CHECKLIST, JOURNAL
 }
 
-class HabitDetailViewModel(val context: Context, private val nav: NavHostController) : ViewModel() {
+class HabitDetailViewModel(val context: Context, val nav: NavHostController) : ViewModel() {
     private val storage = (context as MyApplication).globals.storage
 
     val tab = mutableStateOf(DetailTab.INFO)
@@ -61,16 +61,6 @@ class HabitDetailViewModel(val context: Context, private val nav: NavHostControl
 
     fun viewJournalEntries() {
         tab.value = DetailTab.JOURNAL
-    }
-
-    companion object {
-        fun provideFactory(context: Context, nav: NavHostController):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return HabitDetailViewModel(context, nav) as T
-            }
-        }
     }
 }
 
@@ -107,8 +97,9 @@ fun HabitDetail(
             DetailTab.INFO -> InfoTab(vm, habit, it)
             DetailTab.CHECKLIST -> {
                 val newVM: ChecklistViewModel = viewModel(
-                    factory = ChecklistViewModel.provideFactory(vm.context, habit)
+                    factory = MyViewModel.provideFactory(vm.context, vm.nav)
                 )
+                newVM.init(habit)
                 ChecklistTab(newVM, it)
             }
             DetailTab.JOURNAL -> JournalTab(vm, habit, it)
@@ -150,10 +141,16 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
     }
 }
 
-class ChecklistViewModel(context: Context, private val habit: Habit) : ViewModel() {
+class ChecklistViewModel(context: Context, nav: NavHostController) : MyViewModel() {
     private val storage = (context as MyApplication).globals.storage
 
     val checklist = mutableStateListOf<ChecklistItem>()
+
+    private lateinit var habit: Habit
+
+    fun init(habit: Habit) {
+        this.habit = habit
+    }
 
     fun refresh() {
         checklist.clear()
@@ -179,16 +176,6 @@ class ChecklistViewModel(context: Context, private val habit: Habit) : ViewModel
     fun save() = storage.saveChecklist(habit, checklist)
 
     fun move(from: Int, to: Int) = checklist.move(from, to)
-
-    companion object {
-        fun provideFactory(context: Context, habit: Habit):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ChecklistViewModel(context, habit) as T
-            }
-        }
-    }
 }
 
 @Composable

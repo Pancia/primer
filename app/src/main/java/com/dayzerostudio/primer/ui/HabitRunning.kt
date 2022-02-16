@@ -39,7 +39,7 @@ import java.util.*
 class RunningViewModel(
     val context: Context,
     private val nav: NavHostController
-) : ViewModel() {
+) : MyViewModel() {
     private lateinit var timer: CountDownTimer
 
     private val globals = (context as MyApplication).globals
@@ -133,16 +133,6 @@ class RunningViewModel(
             takingPicture.value = true
         } else {
             launcher.launch(Manifest.permission.CAMERA)
-        }
-    }
-
-    companion object {
-        fun provideFactory(context: Context, nav: NavHostController):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return RunningViewModel(context, nav) as T
-            }
         }
     }
 }

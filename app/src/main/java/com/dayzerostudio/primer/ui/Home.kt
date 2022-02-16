@@ -70,16 +70,6 @@ class HomeViewModel(val context: Context, val nav: NavHostController) : ViewMode
 
     fun getGlobalText() = globals.storage.getGlobalText()
     fun setGlobalText(text: String) = globals.storage.editGlobalText(text)
-
-    companion object {
-        fun provideFactory(context: Context, nav: NavHostController):
-                ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return HomeViewModel(context, nav) as T
-            }
-        }
-    }
 }
 
 @Composable
@@ -152,7 +142,7 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
             HomeTab.HOME -> HomeTab(vm, it)
             HomeTab.HABITS -> {
                 val newVM: HabitsListViewModel =
-                    viewModel(factory = HabitsListViewModel.provideFactory(vm.context, vm.nav))
+                    viewModel(factory = MyViewModel.provideFactory(vm.context, vm.nav))
                 HabitsTab(newVM, it)
             }
         }

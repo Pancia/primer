@@ -1,9 +1,11 @@
 # TODOS
 - [ ] get/display journal entries async & lazily, could be many, how?
     - [ ] show loading circle when loading habits
+- [ ] journal entry
+    - [ ] make sure is saved between app restarts
+    - [ ] should always have a header with timestamp
 - [ ] settings page
     - [ ] pick an alarm sound
-- [X] change time pick to be standard numpad
 - [ ] full screen alarm
 - [ ] daily alarms
     - [ ] only active if a habit was started in the day
@@ -13,11 +15,8 @@
 - [ ] ? status notif if timer active (or as subtitle to active alarm)
 - [ ] ? page to view all entries chronologically
 - [ ] journal entry
-    - [ ] make sure is saved between app restarts
-    - [ ] should always have a header with timestamp
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
-- [ ] rename application!
 - [ ] import from zip (downloaded to phone manually)
 
 # REFACTORINGS

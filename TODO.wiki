@@ -1,11 +1,7 @@
 # TODOS
-- [X] async/lazy loading of
-    - [X] habits
-    - [X] show loading indicator when loading
-    - [X] journal entries
-- [ ] journal entry
-    - [ ] make sure is saved between app restarts
-    - [ ] should always have a header with timestamp
+- [X] journal entry
+    - [X] should always have a header with timestamp
+    - [X] make sure is saved between app restarts
 - [ ] settings page
     - [ ] pick an alarm sound
 - [ ] full screen alarm

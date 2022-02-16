@@ -15,7 +15,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
 import java.io.FileInputStream
 
-private val uuidConverter = object : Converter {
+val uuidConverter = object : Converter {
     override fun canConvert(cls: Class<*>) = cls == UUID::class.java
     override fun toJson(value: Any): String = """{"uuid" : "${value as UUID}"}"""
     override fun fromJson(jv: JsonValue) = UUID.fromString(jv.objString("uuid"))

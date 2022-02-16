@@ -26,8 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.dayzerostudio.primer.ChecklistItem
@@ -93,6 +91,14 @@ class RunningViewModel(
             .cancel(0)
     }
 
+    private fun clearEntryCache() {
+        context.getCache().edit()
+            .remove("entry.checklist")
+            .remove("entry.journalText")
+            .remove("entry.journalImages")
+            .apply()
+    }
+
     fun done(
         habit: Habit,
         text: String,
@@ -101,6 +107,7 @@ class RunningViewModel(
     ) {
         timer.cancel()
         cancelAlarm(habit.id)
+        clearEntryCache()
         saveJournalEntry(habit.id, text, images, checklist)
         nav.navigate(NavRoute.ListOfHabits.create()) {
             popUpTo(NavRoute.Home.route)
@@ -110,6 +117,7 @@ class RunningViewModel(
     fun cancel(habit: Habit) {
         timer.cancel()
         cancelAlarm(habit.id)
+        clearEntryCache()
         nav.navigate(NavRoute.Home.create()) {
             popUpTo(NavRoute.Home.route)
         }
@@ -144,9 +152,18 @@ fun HabitRunning(
     val habit = vm.getHabitInfo(habitID)!!
     val title = remember { mutableStateOf(habit.title) }
     val description = remember { mutableStateOf(habit.description) }
-    val checklist = habit.checklist.toMutableStateList()
-    val journalText = remember { mutableStateOf("") }
-    val journalImages = remember { mutableListOf<String>() }
+    val checklist = rememberJsonListPreference(
+        keyName = "entry.checklist",
+        initialValue = habit.checklist
+    )
+    val journalText = rememberStringPreference(
+        keyName = "entry.journalText",
+        initialValue = ""
+    )
+    val journalImages = rememberJsonListPreference<String>(
+        keyName = "entry.journalImages",
+        initialValue = emptyList()
+    )
     val takingPicture = remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -163,7 +180,7 @@ fun HabitRunning(
         CameraView(onImageCaptured = { uri, fromGallery ->
             Log.e("DBG", "uri: $uri, $fromGallery")
             takingPicture.value = false
-            journalImages.add("$uri")
+            journalImages.value = journalImages.value + "$uri"
         }, onError = { e ->
             Log.e("DBG", "err: $e")
         }, getOutputDirectory = { vm.getImageOutputDirectory(habit.id) })
@@ -180,7 +197,7 @@ fun HabitRunning(
                     Icon(Icons.Default.Clear, "Cancel")
                 }
                 IconButton(onClick = {
-                    vm.done(habit, journalText.value, journalImages, checklist)
+                    vm.done(habit, journalText.value, journalImages.value, checklist.value)
                 }, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Default.Done, "Done")
                 }
@@ -205,7 +222,7 @@ fun HabitRunning(
                     Button(onClick = { vm.snooze(habit) }) {
                         Icon(Icons.Default.Edit, "Snooze")
                         Text(
-                            " duration: ${vm.timeLeft.value}",
+                            " ${vm.timeLeft.value} minutes",
                             style = MaterialTheme.typography.h4
                         )
                     }
@@ -229,10 +246,12 @@ fun HabitRunning(
                                 }
                         )
                     }
-                    items(checklist, key = { it.id }) { item ->
+                    items(checklist.value, key = { it.id }) { item ->
                         Row {
-                            Checkbox(item.isChecked, onCheckedChange = {
-                                checklist[checklist.indexOf(item)] = item.copy(isChecked = it)
+                            Checkbox(item.isChecked, onCheckedChange = { checked ->
+                                val newList = checklist.value.toMutableList()
+                                newList[newList.indexOf(item)] = item.copy(isChecked = checked)
+                                checklist.value = newList
                             })
                             Text(item.text, style = MaterialTheme.typography.h5)
                         }
@@ -246,7 +265,7 @@ fun HabitRunning(
                             modifier = Modifier.fillMaxWidth(1f)
                         )
                     }
-                    if (journalImages.isNotEmpty()) {
+                    if (journalImages.value.isNotEmpty()) {
                         item {
                             LazyRow(
                                 modifier = Modifier.scrollable(
@@ -255,7 +274,7 @@ fun HabitRunning(
                                     state = ScrollableState { it }
                                 )
                             ) {
-                                items(journalImages) {
+                                items(journalImages.value) {
                                     Image(
                                         rememberImagePainter(it),
                                         contentDescription = null,

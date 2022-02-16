@@ -258,38 +258,40 @@ fun ChecklistTab(
 fun JournalTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
     LazyColumn(modifier = Modifier.padding(padding)) {
         items(habit.journalEntries) { entry ->
-            if (entry.text?.isNotBlank() == true) {
-                TextField(
-                    value = entry.text,
-                    onValueChange = {},
-                    label = { Text(entry.at) },
-                    textStyle = MaterialTheme.typography.h5,
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(1f)
-                )
-            }
-            if (entry.checklist.isNotEmpty()) {
+            Card(modifier = Modifier.padding(10.dp)) {
                 Column {
-                    entry.checklist.forEach {
-                        Row {
-                            Checkbox(it.isChecked, enabled = false, onCheckedChange = {})
-                            Text(
-                                it.text,
-                                style = MaterialTheme.typography.h5,
-                                modifier = Modifier.weight(1f)
-                            )
+                    Text(entry.at)
+                    if (entry.text?.isNotBlank() == true) {
+                        TextField(
+                            value = entry.text,
+                            onValueChange = {},
+                            textStyle = MaterialTheme.typography.h5,
+                            readOnly = true,
+                            modifier = Modifier.fillMaxWidth(1f)
+                        )
+                    }
+                    if (entry.checklist.isNotEmpty()) {
+                        entry.checklist.forEach {
+                            Row {
+                                Checkbox(it.isChecked, enabled = false, onCheckedChange = {})
+                                Text(
+                                    it.text,
+                                    style = MaterialTheme.typography.h5,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
-                }
-            }
-            if (entry.images.isNotEmpty()) {
-                LazyRow(modifier = Modifier.fillMaxWidth(1f)) {
-                    items(entry.images) { uri ->
-                        Image(
-                            rememberImagePainter(Uri.parse(uri)),
-                            contentDescription = null,
-                            modifier = Modifier.size(128.dp)
-                        )
+                    if (entry.images.isNotEmpty()) {
+                        LazyRow(modifier = Modifier.fillMaxWidth(1f)) {
+                            items(entry.images) { uri ->
+                                Image(
+                                    rememberImagePainter(Uri.parse(uri)),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(128.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }

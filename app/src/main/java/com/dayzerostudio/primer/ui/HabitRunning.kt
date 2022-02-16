@@ -39,10 +39,8 @@ import java.util.*
 class RunningViewModel(
     val context: Context,
     private val nav: NavHostController
-) : MyViewModel() {
+) : MyViewModel(context, nav) {
     private lateinit var timer: CountDownTimer
-
-    private val globals = (context as MyApplication).globals
 
     val timeLeft = mutableStateOf(0)
 

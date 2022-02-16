@@ -12,11 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.dayzerostudio.primer.MyApplication
 import com.dayzerostudio.primer.R
 import com.dayzerostudio.primer.sendZipToServer
 import java.net.ConnectException
@@ -27,9 +24,7 @@ enum class HomeTab {
     HABITS()
 }
 
-class HomeViewModel(val context: Context, val nav: NavHostController) : ViewModel() {
-    private val globals = (context as MyApplication).globals
-
+class HomeViewModel(val context: Context, val nav: NavHostController) : MyViewModel(context, nav) {
     fun exportHabits() {
         val toast = Toast.makeText(context, "Failed to connect to server", Toast.LENGTH_LONG)
         thread {

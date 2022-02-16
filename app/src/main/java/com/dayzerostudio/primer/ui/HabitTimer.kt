@@ -26,7 +26,7 @@ const val myNotifChID = "MY_CHANNEL"
 class TimerViewModel(
     private val context: Context,
     private val nav: NavHostController
-) : ViewModel() {
+) : MyViewModel(context, nav) {
     private lateinit var habitID: String
     lateinit var time: MutableState<String>
 
@@ -35,8 +35,7 @@ class TimerViewModel(
         this.time = mutableStateOf(duration ?: "")
     }
 
-    private val storage = (context as MyApplication).globals.storage
-    private val globals = (context as MyApplication).globals
+    private val storage = globals.storage
 
     fun getHabitInfo(habitID: String) =
         storage.getHabitInfoByID(habitID)

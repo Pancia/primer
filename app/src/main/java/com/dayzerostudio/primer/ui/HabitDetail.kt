@@ -2,7 +2,6 @@ package com.dayzerostudio.primer.ui
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,28 +14,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.dayzerostudio.primer.ChecklistItem
 import com.dayzerostudio.primer.Habit
-import com.dayzerostudio.primer.MyApplication
 import org.burnoutcrew.reorderable.*
 import java.util.*
+import kotlin.concurrent.thread
 
 enum class DetailTab {
     INFO, CHECKLIST, JOURNAL
 }
 
-class HabitDetailViewModel(val context: Context, val nav: NavHostController) : ViewModel() {
-    private val storage = (context as MyApplication).globals.storage
+class HabitDetailViewModel(val context: Context, val nav: NavHostController) :
+    MyViewModel(context, nav) {
+    private val storage = globals.storage
+
+    private val refreshKey = mutableStateOf(UUID.randomUUID())
+    fun refresh(): State<UUID> {
+        refreshKey.value = UUID.randomUUID()
+        return refreshKey
+    }
 
     val tab = mutableStateOf(DetailTab.INFO)
-
-    fun getHabitByID(habitID: String) =
-        storage.getHabitByID(habitID)
 
     fun editTitle(id: UUID, title: String) {
         storage.editTitle(id, title)
@@ -62,6 +63,13 @@ class HabitDetailViewModel(val context: Context, val nav: NavHostController) : V
     fun viewJournalEntries() {
         tab.value = DetailTab.JOURNAL
     }
+
+    fun loadHabitByID(habitID: String): IOResult<Habit> =
+        IOResult.justTry {
+            storage.getHabitByID(habitID)
+                ?.let { IOResult.Success(it) }
+                ?: IOResult.Failure("was null")
+        }
 }
 
 @Composable
@@ -69,40 +77,60 @@ fun HabitDetail(
     vm: HabitDetailViewModel,
     habitID: String
 ) {
-    val habit = vm.getHabitByID(habitID) ?: return
+    val refreshKey = vm.refresh()
+    val habitState = produceState<IOResult<Habit>>(IOResult.Loading, refreshKey) {
+        thread { value = vm.loadHabitByID(habitID) }
+    }
 
-    Scaffold(topBar = {
-        TopAppBar {
-            Text(habit.id.toString().take(8))
-            Row(modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.End) {
-                IconButton(onClick = { vm.deleteHabit(habit) }) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Habit")
+    when (val result = habitState.value) {
+        is IOResult.Success -> {
+            val habit = result.data
+            Scaffold(topBar = {
+                TopAppBar {
+                    Text(habit.id.toString().take(8))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(1f),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = { vm.deleteHabit(habit) }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete Habit"
+                            )
+                        }
+                    }
+                }
+            }, bottomBar = {
+                BottomAppBar {
+                    IconButton(onClick = { vm.viewInfo() }, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Default.Info, "View Info")
+                    }
+                    IconButton(onClick = { vm.viewChecklist() }, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Default.List, "View Checklist")
+                    }
+                    IconButton(
+                        onClick = { vm.viewJournalEntries() },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Edit, "View Journal Entries")
+                    }
+                }
+            }) {
+                when (vm.tab.value) {
+                    DetailTab.INFO -> InfoTab(vm, habit, it)
+                    DetailTab.CHECKLIST -> {
+                        val newVM: ChecklistViewModel = viewModel(
+                            factory = MyViewModel.provideFactory(vm.context, vm.nav)
+                        )
+                        newVM.init(habit)
+                        ChecklistTab(newVM, it)
+                    }
+                    DetailTab.JOURNAL -> JournalTab(vm, habit, it)
                 }
             }
         }
-    }, bottomBar = {
-        BottomAppBar {
-            IconButton(onClick = { vm.viewInfo() }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.Info, "View Info")
-            }
-            IconButton(onClick = { vm.viewChecklist() }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.List, "View Checklist")
-            }
-            IconButton(onClick = { vm.viewJournalEntries() }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Default.Edit, "View Journal Entries")
-            }
-        }
-    }) {
-        when (vm.tab.value) {
-            DetailTab.INFO -> InfoTab(vm, habit, it)
-            DetailTab.CHECKLIST -> {
-                val newVM: ChecklistViewModel = viewModel(
-                    factory = MyViewModel.provideFactory(vm.context, vm.nav)
-                )
-                newVM.init(habit)
-                ChecklistTab(newVM, it)
-            }
-            DetailTab.JOURNAL -> JournalTab(vm, habit, it)
+        else -> {
+            result.Render()
         }
     }
 }
@@ -141,8 +169,8 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
     }
 }
 
-class ChecklistViewModel(context: Context, nav: NavHostController) : MyViewModel() {
-    private val storage = (context as MyApplication).globals.storage
+class ChecklistViewModel(context: Context, nav: NavHostController) : MyViewModel(context, nav) {
+    private val storage = globals.storage
 
     val checklist = mutableStateListOf<ChecklistItem>()
 

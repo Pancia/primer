@@ -1,6 +1,8 @@
 # TODOS
-- [ ] get/display journal entries async & lazily, could be many, how?
-    - [ ] show loading circle when loading habits
+- [X] async/lazy loading of
+    - [X] habits
+    - [X] show loading indicator when loading
+    - [X] journal entries
 - [ ] journal entry
     - [ ] make sure is saved between app restarts
     - [ ] should always have a header with timestamp
@@ -18,7 +20,3 @@
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
 - [ ] import from zip (downloaded to phone manually)
-
-# REFACTORINGS
-- [ ] pass globals to all viewmodels
-- [ ] refactor navigation actions into viewmodel

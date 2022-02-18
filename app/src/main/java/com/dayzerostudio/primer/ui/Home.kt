@@ -113,6 +113,10 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
                         Icon(Icons.Default.Share, "Export")
                         Text("Export")
                     }
+                    DropdownMenuItem(onClick = { vm.openSettings() }) {
+                        Icon(Icons.Default.Settings, "Settings")
+                        Text("Settings")
+                    }
                 }
             })
         },

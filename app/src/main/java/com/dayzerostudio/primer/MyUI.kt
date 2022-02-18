@@ -18,6 +18,11 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
                 viewModel(factory = MyViewModel.provideFactory(context, nav))
             Home(vm, HomeTab.HOME)
         }
+        composable(NavRoute.Settings.route) {
+            val vm: SettingsViewModel =
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
+            Settings(vm)
+        }
         composable(NavRoute.ListOfHabits.route) {
             val vm: HomeViewModel =
                 viewModel(factory = MyViewModel.provideFactory(context, nav))

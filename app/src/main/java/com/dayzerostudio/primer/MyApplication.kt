@@ -10,6 +10,7 @@ import android.os.*
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.dayzerostudio.primer.ui.HabitStorage
+import com.dayzerostudio.primer.ui.SettingsStorage
 import com.dayzerostudio.primer.ui.myNotifChID
 import java.lang.Long.max
 import kotlin.math.ceil
@@ -21,7 +22,8 @@ private const val TRIGGER_TIME_KEY = "triggerTime"
 class HabitTimeKeeper(context: Context) {
     private val sp = context.getSharedPreferences(this::class.java.name, Context.MODE_PRIVATE)
 
-    val activeHabitID = mutableStateOf(sp.getString(ACTIVE_HABIT_ID_KEY, null)?.let { UUID.fromString(it) })
+    val activeHabitID =
+        mutableStateOf(sp.getString(ACTIVE_HABIT_ID_KEY, null)?.let { UUID.fromString(it) })
     private val triggerTime = mutableStateOf(sp.getLong(TRIGGER_TIME_KEY, -1L))
 
     fun init(habitID: String, time: Int) {
@@ -44,6 +46,7 @@ class HabitTimeKeeper(context: Context) {
 }
 
 class Globals(context: Context) {
+    val settings = SettingsStorage(context)
     val storage = HabitStorage(context)
     val timeKeeper = HabitTimeKeeper(context)
 }
@@ -90,10 +93,7 @@ class MyApplication : Application() {
     }
 
     fun startAlarm() {
-        ringtone = RingtoneManager.getRingtone(
-            this,
-            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        )
+        ringtone = RingtoneManager.getRingtone(this, globals.settings.getAlarmURI())
         ringtone?.isLooping = true
         Log.e("DBG", "start: ringtone = $ringtone")
         ringtone?.play()

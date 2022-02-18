@@ -6,8 +6,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import com.dayzerostudio.primer.MyApplication
 
-abstract class MyViewModel(context: Context, nav: NavHostController) : ViewModel() {
+abstract class MyViewModel(context: Context, private val nav: NavHostController) : ViewModel() {
     internal val globals = (context as MyApplication).globals
+
+    fun openSettings() {
+        nav.navigate(NavRoute.Settings.create())
+    }
 
     companion object {
         fun provideFactory(context: Context, nav: NavHostController):

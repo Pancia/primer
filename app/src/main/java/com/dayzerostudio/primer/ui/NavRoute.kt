@@ -7,6 +7,10 @@ sealed class NavRoute(val route: String) {
         fun create() = this.route
     }
 
+    object Settings : NavRoute("settings") {
+        fun create() = this.route
+    }
+
     object ListOfHabits : NavRoute("habits-list") {
         fun create() = this.route
     }

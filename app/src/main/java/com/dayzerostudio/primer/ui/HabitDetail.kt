@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
@@ -144,27 +145,19 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
             .fillMaxWidth(1f)
             .padding(padding)
     ) {
-        TextField(
-            value = title.value,
-            onValueChange = { title.value = it },
+        DebouncedTextField(
+            initialValue = habit.title,
+            debouncedOnValueChange = { vm.editTitle(habit.id, title.value) },
+            scope = vm.viewModelScope,
             label = { Text("Title") },
-            textStyle = MaterialTheme.typography.h5,
-            modifier = Modifier
-                .onFocusChanged {
-                    vm.editTitle(habit.id, title.value)
-                }
-                .fillMaxWidth(1f)
+            modifier = Modifier.fillMaxWidth(1f)
         )
-        TextField(
-            value = description.value,
-            onValueChange = { description.value = it },
+        DebouncedTextField(
+            initialValue = habit.description,
+            debouncedOnValueChange = { vm.editDescription(habit.id, description.value) },
+            scope = vm.viewModelScope,
             label = { Text("Description") },
-            textStyle = MaterialTheme.typography.h5,
-            modifier = Modifier
-                .onFocusChanged {
-                    vm.editDescription(habit.id, description.value)
-                }
-                .fillMaxWidth(1f)
+            modifier = Modifier.fillMaxWidth(1f)
         )
     }
 }
@@ -222,7 +215,6 @@ fun ChecklistTab(
             }, onDragEnd = { _, _ -> vm.save() })
     ) {
         items(vm.checklist, key = { it.id }) { item ->
-            val text = remember { mutableStateOf(item.text) }
             Row {
                 Icon(
                     Icons.Default.Menu, "Drag to reorder",
@@ -231,15 +223,11 @@ fun ChecklistTab(
                         .detectReorder(state)
                 )
                 Checkbox(false, enabled = false, onCheckedChange = {})
-                TextField(
-                    value = text.value,
-                    onValueChange = { text.value = it },
-                    textStyle = MaterialTheme.typography.h5,
-                    modifier = Modifier
-                        .weight(1f)
-                        .onFocusChanged {
-                            vm.editText(item, text.value)
-                        }
+                DebouncedTextField(
+                    initialValue = item.text,
+                    scope = vm.viewModelScope,
+                    debouncedOnValueChange = { vm.editText(item, it) },
+                    modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = { vm.delete(item) }) {
                     Icon(Icons.Default.Delete, "Delete")
@@ -253,6 +241,7 @@ fun ChecklistTab(
         }
     }
 }
+
 
 @Composable
 fun JournalTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
@@ -274,9 +263,14 @@ fun JournalTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
                         entry.checklist.forEach {
                             Row {
                                 Checkbox(it.isChecked, enabled = false, onCheckedChange = {})
-                                Text(
-                                    it.text,
-                                    style = MaterialTheme.typography.h5,
+                                TextField(
+                                    value = it.text,
+                                    onValueChange = {},
+                                    label = if (it.isChecked) {
+                                        { Text(it.at) }
+                                    } else null,
+                                    readOnly = true,
+                                    textStyle = MaterialTheme.typography.h5,
                                     modifier = Modifier.weight(1f)
                                 )
                             }

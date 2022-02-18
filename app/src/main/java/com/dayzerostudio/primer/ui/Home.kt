@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.dayzerostudio.primer.R
@@ -86,15 +87,11 @@ fun HomeTab(vm: HomeViewModel, padding: PaddingValues) {
                 Text(text = "GOTO: ${activeHabit.title}")
             }
         }
-        val globalText = remember { mutableStateOf(vm.getGlobalText()) }
-        TextField(
-            value = globalText.value,
-            onValueChange = { globalText.value = it },
-            textStyle = MaterialTheme.typography.h5,
+        DebouncedTextField(
+            initialValue = vm.getGlobalText(),
+            debouncedOnValueChange = { vm.setGlobalText(it) },
+            scope = vm.viewModelScope,
             modifier = Modifier
-                .onFocusChanged {
-                    vm.setGlobalText(globalText.value)
-                }
                 .fillMaxWidth(1f)
                 .weight(1f)
         )

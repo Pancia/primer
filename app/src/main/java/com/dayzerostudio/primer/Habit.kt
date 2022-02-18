@@ -1,9 +1,11 @@
 package com.dayzerostudio.primer
 
+import com.dayzerostudio.primer.ui.now
 import java.util.*
 
 data class ChecklistItem(
     var text: String,
+    val at: String = now(),
     val id: UUID = UUID.randomUUID(),
     var isChecked: Boolean = false
 )

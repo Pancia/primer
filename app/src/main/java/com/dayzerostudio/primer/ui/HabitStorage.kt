@@ -30,6 +30,8 @@ private const val CHECKLIST_FILE = "checklist.json"
 private const val GLOBAL_TEXT_FILE = "global-text.txt"
 private const val HABITS_ORDERING_FILE = "habits-ordering.txt"
 
+fun now() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))!!
+
 class HabitStorage(private val context: Context) {
     private val appName = context.getString(R.string.app_name)
 
@@ -126,7 +128,7 @@ class HabitStorage(private val context: Context) {
     }
 
     fun addNewChecklistItem(habit: Habit): ChecklistItem {
-        val item = ChecklistItem("temp")
+        val item = ChecklistItem("temp", now())
         val checklist = checklistFor(habit.id)
         saveChecklist(habit, checklist.plus(item))
         return item
@@ -149,8 +151,8 @@ class HabitStorage(private val context: Context) {
         images: List<String>,
         checklist: List<ChecklistItem>
     ) {
-        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
-        storageFor(id, "$ENTRIES_DIR/$now.json").apply {
+        val now = now()
+        storageFor(id, "$ENTRIES_DIR/${now}.json").apply {
             File(parent!!).mkdirs()
             val entry = JournalEntry(now, text, images, checklist)
             val json = json.toJsonString(entry)
@@ -196,8 +198,7 @@ class HabitStorage(private val context: Context) {
     }
 
     fun createZip(): File {
-        val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))
-        val outFile = File(exportsDir(), "exported-habits.${now}.zip")
+        val outFile = File(exportsDir(), "exported-habits.${now()}.zip")
         val out = ZipArchiveOutputStream(outFile)
         addToZip(out, globalTextFile(), GLOBAL_TEXT_FILE)
         addToZip(out, orderingFile(), HABITS_ORDERING_FILE)

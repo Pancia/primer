@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.dayzerostudio.primer.ChecklistItem
@@ -204,13 +205,11 @@ fun HabitRunning(
             }
         }, topBar = {
             TopAppBar {
-                TextField(
-                    value = title.value,
-                    onValueChange = { title.value = it },
+                DebouncedTextField(
+                    initialValue = title.value,
+                    debouncedOnValueChange = { vm.editTitle(habit.id, title.value) },
+                    scope = vm.viewModelScope,
                     textStyle = MaterialTheme.typography.h6,
-                    modifier = Modifier.onFocusChanged {
-                        vm.editTitle(habit.id, title.value)
-                    }
                 )
             }
         }) {
@@ -234,16 +233,18 @@ fun HabitRunning(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {
-                        TextField(
-                            value = description.value,
-                            onValueChange = { description.value = it },
+                        DebouncedTextField(
+                            initialValue = description.value,
+                            debouncedOnValueChange = {
+                                vm.editDescription(
+                                    habit.id,
+                                    description.value
+                                )
+                            },
+                            scope = vm.viewModelScope,
                             label = { Text("Description") },
                             textStyle = MaterialTheme.typography.h5,
-                            modifier = Modifier
-                                .fillMaxWidth(1f)
-                                .onFocusChanged {
-                                    vm.editDescription(habit.id, description.value)
-                                }
+                            modifier = Modifier.fillMaxWidth(1f)
                         )
                     }
                     items(checklist.value, key = { it.id }) { item ->

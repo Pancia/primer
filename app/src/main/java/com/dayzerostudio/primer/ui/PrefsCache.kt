@@ -1,10 +1,7 @@
 package com.dayzerostudio.primer.ui
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import com.beust.klaxon.Klaxon
 
@@ -25,11 +22,14 @@ fun rememberStringPreference(
         currentState.value = it
     }
     return object : MutableState<String> {
+        val save = debounce(300, rememberCoroutineScope()) { v: String ->
+            sp.edit().putString(keyName, v).apply()
+        }
         override var value: String
             get() = currentState.value
             set(v) {
                 currentState.value = v
-                sp.edit().putString(keyName, v).apply()
+                save(v)
             }
 
         override fun component1() = value

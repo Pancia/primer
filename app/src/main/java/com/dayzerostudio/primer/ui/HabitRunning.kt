@@ -151,8 +151,6 @@ fun HabitRunning(
     _duration: Int
 ) {
     val habit = vm.getHabitInfo(habitID)!!
-    val title = remember { mutableStateOf(habit.title) }
-    val description = remember { mutableStateOf(habit.description) }
     val checklist = rememberJsonListPreference(
         keyName = "entry.checklist",
         initialValue = habit.checklist
@@ -206,8 +204,8 @@ fun HabitRunning(
         }, topBar = {
             TopAppBar {
                 DebouncedTextField(
-                    initialValue = title.value,
-                    debouncedOnValueChange = { vm.editTitle(habit.id, title.value) },
+                    initialValue = habit.title,
+                    debouncedOnValueChange = { vm.editTitle(habit.id, it) },
                     scope = vm.viewModelScope,
                     textStyle = MaterialTheme.typography.h6,
                 )
@@ -234,13 +232,8 @@ fun HabitRunning(
                 ) {
                     item {
                         DebouncedTextField(
-                            initialValue = description.value,
-                            debouncedOnValueChange = {
-                                vm.editDescription(
-                                    habit.id,
-                                    description.value
-                                )
-                            },
+                            initialValue = habit.description,
+                            debouncedOnValueChange = { vm.editDescription(habit.id, it) },
                             scope = vm.viewModelScope,
                             label = { Text("Description") },
                             textStyle = MaterialTheme.typography.h5,

@@ -1,14 +1,20 @@
 # TODOS
-- [ ] settings page
-    - [ ] pick an alarm sound
-    - [ ] https://stackoverflow.com/questions/60901446/setting-alarm-via-uri-reference
+- [X] BUG: cannot edit habit detail title or desc (but checklist is fine)
+- [ ] Scroll textfield so viewable
+- [ ] Export dialog with IP
 - [ ] full screen alarm
+    - [ ] builder.setFullScreenIntent
+    - [ ] ??? drag slider like clock app to snooze picker or go to running page
+        - [ ] timebox to 30m
+        - [ ] try to find compose ui equivalent
+        - [ ] else try to find clock app source code & maybe just copy it
+        - [ ] else just have two buttons or something stupid
 - [ ] daily alarms
     - [ ] only active if a habit was started in the day
     - [ ] displayed in a home page tab
 - [ ] global log class, writes to file & alerts user on errors
     - [ ] overflow menu item
-- [ ] ? status notif if timer active (or as subtitle to active alarm)
+- [ ] ? status notif if timer active (or as subtitle to active daily alarm)
 - [ ] ? page to view all entries chronologically
 - [ ] journal entry
     - [ ] can delete in running screen

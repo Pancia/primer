@@ -2,6 +2,7 @@ package com.dayzerostudio.primer.ui
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -138,8 +139,6 @@ fun HabitDetail(
 
 @Composable
 fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
-    val title = remember { mutableStateOf(habit.title) }
-    val description = remember { mutableStateOf(habit.description) }
     Column(
         modifier = Modifier
             .fillMaxWidth(1f)
@@ -147,14 +146,14 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
     ) {
         DebouncedTextField(
             initialValue = habit.title,
-            debouncedOnValueChange = { vm.editTitle(habit.id, title.value) },
+            debouncedOnValueChange = { vm.editTitle(habit.id, it) },
             scope = vm.viewModelScope,
             label = { Text("Title") },
             modifier = Modifier.fillMaxWidth(1f)
         )
         DebouncedTextField(
             initialValue = habit.description,
-            debouncedOnValueChange = { vm.editDescription(habit.id, description.value) },
+            debouncedOnValueChange = { vm.editDescription(habit.id, it) },
             scope = vm.viewModelScope,
             label = { Text("Description") },
             modifier = Modifier.fillMaxWidth(1f)

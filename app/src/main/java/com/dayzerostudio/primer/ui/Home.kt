@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,12 +25,12 @@ enum class HomeTab {
 }
 
 class HomeViewModel(val context: Context, val nav: NavHostController) : MyViewModel(context, nav) {
-    fun exportHabits() {
+    fun exportHabits(url: String) {
         val toast = Toast.makeText(context, "Failed to connect to server", Toast.LENGTH_LONG)
         thread {
             val z = globals.storage.createZip()
             try {
-                sendZipToServer(z)
+                sendZipToServer(url, z)
             } catch (e: ConnectException) {
                 Log.e("export-habits", "Failed to export habits!", e)
                 toast.show()
@@ -100,16 +99,17 @@ fun HomeTab(vm: HomeViewModel, padding: PaddingValues) {
 
 @Composable
 fun Home(vm: HomeViewModel, tab: HomeTab) {
-    var showOverflow by remember { mutableStateOf(false) }
+    val showOverflow = remember { mutableStateOf(false) }
+    val showExportDialog = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
-                IconButton(onClick = { showOverflow = !showOverflow }) {
+                IconButton(onClick = { showOverflow.value = !showOverflow.value }) {
                     Icon(Icons.Default.MoreVert, "More")
                 }
-                DropdownMenu(expanded = showOverflow,
-                    onDismissRequest = { showOverflow = false }) {
-                    DropdownMenuItem(onClick = { vm.exportHabits() }) {
+                DropdownMenu(expanded = showOverflow.value,
+                    onDismissRequest = { showOverflow.value = false }) {
+                    DropdownMenuItem(onClick = { showExportDialog.value = true }) {
                         Icon(Icons.Default.Share, "Export")
                         Text("Export")
                     }
@@ -134,6 +134,28 @@ fun Home(vm: HomeViewModel, tab: HomeTab) {
             }
         }
     ) {
+        if (showExportDialog.value) {
+            val exportURL = rememberStringPreference("export_url", "")
+            val close = {
+                showExportDialog.value = false
+                showOverflow.value = false
+            }
+            AlertDialog(
+                onDismissRequest = close,
+                confirmButton = {
+                    Button(onClick = { vm.exportHabits(exportURL.value); close() }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = close) {
+                        Text("Cancel")
+                    }
+                },
+                text = {
+                    TextField(exportURL.value, onValueChange = { text -> exportURL.value = text })
+                })
+        }
         when (tab) {
             HomeTab.HOME -> HomeTab(vm, it)
             HomeTab.HABITS -> {

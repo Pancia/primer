@@ -3,6 +3,10 @@ package com.dayzerostudio.primer.ui
 import java.util.*
 
 sealed class NavRoute(val route: String) {
+    object FullScreenAlarm : NavRoute("fullscreen-alarm/{habitID}") {
+        fun create(habitID: UUID) = "fullscreen-alarm/$habitID"
+    }
+
     object Home : NavRoute("home") {
         fun create() = this.route
     }

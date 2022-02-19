@@ -9,6 +9,7 @@ import android.media.RingtoneManager
 import android.os.*
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import com.dayzerostudio.primer.ui.AlarmKeeper
 import com.dayzerostudio.primer.ui.HabitStorage
 import com.dayzerostudio.primer.ui.SettingsStorage
 import com.dayzerostudio.primer.ui.myNotifChID
@@ -46,6 +47,7 @@ class HabitTimeKeeper(context: Context) {
 }
 
 class Globals(context: Context) {
+    val alarm = AlarmKeeper(context)
     val settings = SettingsStorage(context)
     val storage = HabitStorage(context)
     val timeKeeper = HabitTimeKeeper(context)
@@ -69,47 +71,5 @@ class MyApplication : Application() {
                     NotificationManager.IMPORTANCE_HIGH
                 )
             )
-    }
-
-    private var ringtone: Ringtone? = null
-
-    private fun vibrate(pattern: LongArray) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vib =
-                applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vib.vibrate(
-                CombinedVibration.createParallel(
-                    VibrationEffect.createWaveform
-                        (pattern, 0)
-                )
-            )
-        } else {
-            val vib = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vib.vibrate(
-                VibrationEffect.createWaveform
-                    (pattern, 0)
-            )
-        }
-    }
-
-    fun startAlarm() {
-        ringtone = RingtoneManager.getRingtone(this, globals.settings.getAlarmURI())
-        ringtone?.isLooping = true
-        Log.e("DBG", "start: ringtone = $ringtone")
-        ringtone?.play()
-        vibrate(longArrayOf(0, 400, 300, 400, 900))
-    }
-
-    fun stopAlarm() {
-        Log.e("DBG", "stop: ringtone = $ringtone")
-        ringtone?.stop()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vib =
-                applicationContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vib.cancel()
-        } else {
-            val vib = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vib.cancel()
-        }
     }
 }

@@ -87,7 +87,7 @@ class RunningViewModel(
     private fun cancelAlarm(habitID: UUID) {
         globals.timeKeeper.clear()
         Alarm.stopAlarm(context, "$habitID")
-        (context as MyApplication).stopAlarm()
+        globals.alarm.stopAlarm()
         (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             .cancel(0)
     }

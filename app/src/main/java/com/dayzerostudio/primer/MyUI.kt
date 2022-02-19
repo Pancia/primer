@@ -6,13 +6,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.dayzerostudio.primer.MyApplication
 import com.dayzerostudio.primer.ui.*
 
 @Composable
 fun MyApp(nav: NavHostController, application: MyApplication) {
     val context = application as Context
     NavHost(navController = nav, startDestination = NavRoute.Home.create()) {
+        composable(NavRoute.FullScreenAlarm.route) {
+            val habitID = it.arguments?.getString("habitID")!!
+            val vm: AlarmViewModel =
+                viewModel(factory = MyViewModel.provideFactory(context, nav))
+            FullScreenAlarm(vm, habitID)
+        }
         composable(NavRoute.Home.route) {
             val vm: HomeViewModel =
                 viewModel(factory = MyViewModel.provideFactory(context, nav))

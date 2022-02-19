@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.NavHostController
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
 
     private fun navigateTo(route: String?) {
         route?.let {
-            (application as MyApplication).stopAlarm()
+            (application as MyApplication).globals.alarm.stopAlarm()
             (this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                 .cancel(0)
             nav.navigate(it)
@@ -30,6 +31,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setShowWhenLocked(true)
+        setTurnScreenOn(true)
+        //window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val route = intent?.extras?.getString("navigateTo")
         setContent {
             MyApplicationTheme {

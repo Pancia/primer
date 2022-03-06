@@ -1,14 +1,9 @@
 # TODOS
-- [ ] Export dialog with IP
+- [ ] export show upload initiated message/toast
+- [ ] cache storage, and update async
 - [ ] make default title and desc blank, with ui placeholder instead
 - [ ] when creating habit focus onto title textfield
-- [X] full screen alarm
-    - [X] builder.setFullScreenIntent
-    - [X] ??? drag slider like clock app to snooze picker or go to running page
-        - [X] timebox to 30m
-        - [X] try to find compose ui equivalent
-        - [X] else try to find clock app source code & maybe just copy it
-        - [X] else just have two buttons or something stupid
+- [ ] ? actually compress images (how?)
 - [ ] daily alarms
     - [ ] only active if a habit was started in the day
     - [ ] displayed in a home page tab

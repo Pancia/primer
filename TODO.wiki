@@ -1,19 +1,28 @@
 # TODOS
-- [ ] export show upload initiated message/toast
-- [ ] cache storage, and update async
-- [ ] make default title and desc blank, with ui placeholder instead
+- [X] Make checkboxes larger to match
+- [X] Vibrate on camera action
+- [X] export show upload initiated message/toast
 - [ ] when creating habit focus onto title textfield
-- [ ] ? actually compress images (how?)
+- [ ] cache storage, and update async
+- [ ] record audio snippet
+- [ ] home tabs for:
+    - [ ] todos
+    - [ ] principles
+    - [ ] daily todos
+    - [ ] Todos nested, and foldable
+    - [ ] daily alarms
 - [ ] daily alarms
-    - [ ] only active if a habit was started in the day
+    - [ ] must start in a day
+    - [ ] ? how to workflow if you are currently in a habit
     - [ ] displayed in a home page tab
-- [ ] global log class, writes to file & alerts user on errors
-    - [ ] overflow menu item
 - [ ] ? status notif if timer active (or as subtitle to active daily alarm)
 - [ ] ? page to view all entries chronologically
 - [ ] journal entry
     - [ ] can delete in running screen
     - [ ] can click on image & open/view ?
+
+- [ ] global log class, writes to file & alerts user on errors
+    - [ ] as overflow menu item
 - [ ] import from zip (downloaded to phone manually)
 
 FOR LATER:

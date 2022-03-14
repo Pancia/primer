@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -12,8 +13,15 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -77,7 +85,8 @@ class HabitDetailViewModel(val context: Context, val nav: NavHostController) :
 @Composable
 fun HabitDetail(
     vm: HabitDetailViewModel,
-    habitID: String
+    habitID: String,
+    isNew: Boolean
 ) {
     val refreshKey = vm.refresh()
     val habitState = produceState<IOResult<Habit>>(IOResult.Loading, refreshKey) {
@@ -119,7 +128,7 @@ fun HabitDetail(
                 }
             }) {
                 when (vm.tab.value) {
-                    DetailTab.INFO -> InfoTab(vm, habit, it)
+                    DetailTab.INFO -> InfoTab(vm, habit, isNew, it)
                     DetailTab.CHECKLIST -> {
                         val newVM: ChecklistViewModel = viewModel(
                             factory = MyViewModel.provideFactory(vm.context, vm.nav)
@@ -138,7 +147,13 @@ fun HabitDetail(
 }
 
 @Composable
-fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
+fun InfoTab(vm: HabitDetailViewModel, habit: Habit, isNew: Boolean, padding: PaddingValues) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        if (isNew) {
+            focusRequester.requestFocus()
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth(1f)
@@ -149,7 +164,9 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
             debouncedOnValueChange = { vm.editTitle(habit.id, it) },
             scope = vm.viewModelScope,
             label = { Text("Title") },
-            modifier = Modifier.fillMaxWidth(1f)
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .focusRequester(focusRequester)
         )
         DebouncedTextField(
             initialValue = habit.description,
@@ -161,7 +178,8 @@ fun InfoTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
     }
 }
 
-class ChecklistViewModel(context: Context, nav: NavHostController) : MyViewModel(context, nav) {
+class ChecklistViewModel(public val context: Context, nav: NavHostController) :
+    MyViewModel(context, nav) {
     private val storage = globals.storage
 
     val checklist = mutableStateListOf<ChecklistItem>()
@@ -214,14 +232,19 @@ fun ChecklistTab(
             }, onDragEnd = { _, _ -> vm.save() })
     ) {
         items(vm.checklist, key = { it.id }) { item ->
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Menu, "Drag to reorder",
                     modifier = Modifier
                         .draggedItem(state.offsetByKey(item.id))
                         .detectReorder(state)
                 )
-                Checkbox(false, enabled = false, onCheckedChange = {})
+                Checkbox(
+                    false,
+                    enabled = false,
+                    onCheckedChange = {},
+                    modifier = Modifier.size(40.dp)
+                )
                 DebouncedTextField(
                     initialValue = item.text,
                     scope = vm.viewModelScope,

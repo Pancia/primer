@@ -1,6 +1,8 @@
 package com.dayzerostudio.primer.ui
 
 import android.content.Context
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
@@ -25,7 +28,7 @@ import kotlin.concurrent.thread
 typealias ResultHabits = IOResult<MutableList<Habit>>
 
 class HabitsListViewModel(
-    context: Context,
+    public val context: Context,
     private val nav: NavHostController
 ) : ViewModel() {
     private val storage = (context as MyApplication).globals.storage
@@ -86,7 +89,9 @@ fun HabitsTab(vm: HabitsListViewModel, padding: PaddingValues) {
                             .detectReorderAfterLongPress(state),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        Button(modifier = Modifier.weight(1f, true).padding(5.dp),
+                        Button(modifier = Modifier
+                            .weight(1f, true)
+                            .padding(5.dp),
                             onClick = { vm.navToHabit(it) }) {
                             Text(text = it.title)
                         }

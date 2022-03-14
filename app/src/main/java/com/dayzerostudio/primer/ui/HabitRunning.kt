@@ -246,7 +246,7 @@ fun HabitRunning(
                                 val newList = checklist.value.toMutableList()
                                 newList[newList.indexOf(item)] = item.copy(isChecked = checked)
                                 checklist.value = newList
-                            })
+                            }, modifier = Modifier.size(40.dp))
                             Text(item.text, style = MaterialTheme.typography.h5)
                         }
                     }

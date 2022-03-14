@@ -26,30 +26,12 @@ import java.util.*
 class AlarmKeeper(private val context: Context) {
     private var ringtone: Ringtone? = null
 
-    private fun vibrate(pattern: LongArray) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vib = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vib.vibrate(
-                CombinedVibration.createParallel(
-                    VibrationEffect.createWaveform
-                        (pattern, 0)
-                )
-            )
-        } else {
-            val vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vib.vibrate(
-                VibrationEffect.createWaveform
-                    (pattern, 0)
-            )
-        }
-    }
-
     fun startAlarm(uri: Uri?) {
         ringtone = RingtoneManager.getRingtone(context, uri)
         ringtone?.isLooping = true
         Log.e("DBG", "start: ringtone = $ringtone")
         ringtone?.play()
-        vibrate(longArrayOf(0, 400, 300, 400, 900))
+        vibrate(context, longArrayOf(0, 400, 300, 400, 900))
     }
 
     fun stopAlarm() {

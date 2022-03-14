@@ -33,11 +33,18 @@ fun MyApp(nav: NavHostController, application: MyApplication) {
                 viewModel(factory = MyViewModel.provideFactory(context, nav))
             Home(vm, HomeTab.HABITS)
         }
-        composable(NavRoute.HabitDetail.route) {
+        composable(
+            NavRoute.HabitDetail.route,
+            arguments = listOf(
+                navArgument("habitID") { type = NavType.StringType },
+                navArgument("isNew") { type = NavType.BoolType },
+            )
+        ) {
             val vm: HabitDetailViewModel =
                 viewModel(factory = MyViewModel.provideFactory(context, nav))
             val habitID = it.arguments?.getString("habitID")!!
-            HabitDetail(vm, habitID)
+            val isNew = it.arguments?.getBoolean("isNew", false)!!
+            HabitDetail(vm, habitID, isNew)
         }
         composable(
             NavRoute.SetTimer.route,

@@ -222,6 +222,10 @@ class HabitStorage(private val context: Context) {
 }
 
 private fun File.ensureExists(): File {
-    if (!exists()) createNewFile()
+    Log.w("DBG", "this = $this")
+    if (!exists()) {
+        this.parentFile!!.mkdirs()
+        createNewFile()
+    }
     return this
 }

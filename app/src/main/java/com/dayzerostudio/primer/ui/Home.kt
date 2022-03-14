@@ -24,16 +24,23 @@ enum class HomeTab {
     HABITS()
 }
 
+private fun Context.toast(stringRes: Int, length: Int): Toast =
+    Toast.makeText(this, this.getString(stringRes), length)
+
 class HomeViewModel(val context: Context, val nav: NavHostController) : MyViewModel(context, nav) {
     fun exportHabits(url: String) {
-        val toast = Toast.makeText(context, "Failed to connect to server", Toast.LENGTH_LONG)
+        val error = context.toast(R.string.connect_to_server_failure, 1)
+        val creatingZip = context.toast(R.string.creating_zip, 1)
+        val sendingReq = context.toast(R.string.sending_zip_to_server, 0)
         thread {
+            creatingZip.show()
             val z = globals.storage.createZip()
             try {
-                sendZipToServer(url, z)
+                sendingReq.show()
+                sendZipToServer(context, url, z)
             } catch (e: ConnectException) {
                 Log.e("export-habits", "Failed to export habits!", e)
-                toast.show()
+                error.show()
             }
         }
     }
@@ -60,7 +67,7 @@ class HomeViewModel(val context: Context, val nav: NavHostController) : MyViewMo
     fun getHabitInfoByID(s: String) = globals.storage.getHabitInfoByID(s)
     fun navToNewHabit() {
         val habit = globals.storage.create("TempTitle")
-        nav.navigate(NavRoute.HabitDetail.create(habit.id))
+        nav.navigate(NavRoute.HabitDetail.create(habit.id, true))
     }
 
     fun getGlobalText() = globals.storage.getGlobalText()

@@ -61,6 +61,7 @@ fun CameraView(
     ) { cameraUIAction ->
         when (cameraUIAction) {
             is CameraUIAction.OnCameraClick -> {
+                vibrate(context, longArrayOf(0, 300, 200), -1)
                 imageCapture.takePicture(
                     context,
                     lensFacing,

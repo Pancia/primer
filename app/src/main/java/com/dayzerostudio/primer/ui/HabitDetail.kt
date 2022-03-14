@@ -1,6 +1,8 @@
 package com.dayzerostudio.primer.ui
 
 import android.content.Context
+import android.graphics.Paint
+import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -30,6 +32,8 @@ import coil.compose.rememberImagePainter
 import com.dayzerostudio.primer.ChecklistItem
 import com.dayzerostudio.primer.Habit
 import org.burnoutcrew.reorderable.*
+import java.io.File
+import java.io.FileInputStream
 import java.util.*
 import kotlin.concurrent.thread
 
@@ -80,6 +84,46 @@ class HabitDetailViewModel(val context: Context, val nav: NavHostController) :
                 ?.let { IOResult.Success(it) }
                 ?: IOResult.Failure("was null")
         }
+
+    private var player: MediaPlayer? = null
+    val isPlayingAudio = mutableStateOf<String?>(null)
+
+    private fun stopPlaying() {
+        player?.release()
+        player = null
+    }
+
+    private fun startPlaying(recording: String) {
+        isPlayingAudio.value = recording
+        Log.e("DBG", "playing: $recording")
+        player = MediaPlayer().apply {
+            try {
+                setDataSource(FileInputStream(recording).fd)
+                prepare()
+                start()
+            } catch (e: Exception) {
+                Log.e("DBG", "playing recording failed", e)
+            }
+        }
+        player?.setOnCompletionListener {
+            player?.release()
+            player = null
+            isPlayingAudio.value = null
+        }
+    }
+
+    fun toggleIsPlayingRecording(recording: String) {
+        if (isPlayingAudio.value != null) {
+            stopPlaying()
+            if (isPlayingAudio.value != recording) {
+                startPlaying(recording)
+            } else {
+                isPlayingAudio.value = null
+            }
+        } else {
+            startPlaying(recording)
+        }
+    }
 }
 
 @Composable
@@ -295,6 +339,20 @@ fun JournalTab(vm: HabitDetailViewModel, habit: Habit, padding: PaddingValues) {
                                     textStyle = MaterialTheme.typography.h5,
                                     modifier = Modifier.weight(1f)
                                 )
+                            }
+                        }
+                    }
+                    if (entry.recordings.isNotEmpty()) {
+                        entry.recordings.forEach {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { vm.toggleIsPlayingRecording(it) }) {
+                                    if (vm.isPlayingAudio.value == it)
+                                        Icon(Icons.Default.Close, "stop playing recording")
+                                    else
+                                        Icon(Icons.Default.PlayArrow, "start playing recording")
+                                }
+                                Text(File(it).humanSize())
+                                Text(File(it).name)
                             }
                         }
                     }

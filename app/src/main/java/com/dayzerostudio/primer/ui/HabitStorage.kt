@@ -1,16 +1,12 @@
 package com.dayzerostudio.primer.ui
 
 import android.content.Context
-import android.util.Log
-import com.dayzerostudio.primer.Habit
-import com.dayzerostudio.primer.JournalEntry
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import com.beust.klaxon.*
-import com.dayzerostudio.primer.ChecklistItem
-import com.dayzerostudio.primer.R
+import com.dayzerostudio.primer.*
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.utils.IOUtils
 import java.io.FileInputStream
@@ -23,6 +19,7 @@ val uuidConverter = object : Converter {
 
 private const val ENTRIES_DIR = "entries"
 private const val IMAGES_DIR = "images"
+private const val RECORDINGS_DIR = "audio"
 private const val HABITS_DIR = "habits"
 private const val TRASH_DIR = "trash"
 private const val INFO_FILE = "info.json"
@@ -31,6 +28,7 @@ private const val GLOBAL_TEXT_FILE = "global-text.txt"
 private const val HABITS_ORDERING_FILE = "habits-ordering.txt"
 
 fun now() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"))!!
+fun nowS() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm.ss"))!!
 
 class HabitStorage(private val context: Context) {
     private val appName = context.getString(R.string.app_name)
@@ -149,15 +147,22 @@ class HabitStorage(private val context: Context) {
         id: UUID,
         text: String,
         images: List<String>,
-        checklist: List<ChecklistItem>
+        checklist: List<ChecklistItem>,
+        recordings: List<String>
     ) {
         val now = now()
         storageFor(id, "$ENTRIES_DIR/${now}.json").apply {
             File(parent!!).mkdirs()
-            val entry = JournalEntry(now, text, images, checklist)
+            val entry = JournalEntry(now, text, images, checklist, recordings)
             val json = json.toJsonString(entry)
             writeText(json)
         }
+    }
+
+    fun pathToRecordingFor(habit: Habit): String {
+        return storageFor(habit.id, "$RECORDINGS_DIR/${nowS()}.mp3").apply {
+            File(parent!!).mkdirs()
+        }.absolutePath
     }
 
     fun getImageOutputDirectory(habitID: UUID): File =
@@ -222,7 +227,6 @@ class HabitStorage(private val context: Context) {
 }
 
 private fun File.ensureExists(): File {
-    Log.w("DBG", "this = $this")
     if (!exists()) {
         this.parentFile!!.mkdirs()
         createNewFile()

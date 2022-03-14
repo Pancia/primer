@@ -1,6 +1,7 @@
 package com.dayzerostudio.primer
 
 import com.dayzerostudio.primer.ui.now
+import com.dayzerostudio.primer.ui.nowS
 import java.util.*
 
 data class ChecklistItem(
@@ -14,7 +15,8 @@ data class JournalEntry(
     val at: String,
     val text: String?,
     val images: List<String> = emptyList(),
-    val checklist: List<ChecklistItem> = emptyList()
+    val checklist: List<ChecklistItem> = emptyList(),
+    val recordings: List<String> = emptyList()
 )
 
 data class Habit(
